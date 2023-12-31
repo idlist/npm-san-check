@@ -1,9 +1,11 @@
 {
   "name": "npm-san-check",
   "version": "0.1.0",
-  "description": "Simple npm check with fewer dependency and fewer (almost no) functionality",
+  "description": "Simple npm check with fewer dependency and fewer (almost no) functionalities",
   "type": "module",
-  "main": "index.js",
+  "author": "i'DLisT <i@idl.ist> (https://idl.ist/)",
+  "license": "MIT",
+  "main": "./bin/cli.js",
   "bin": {
     "npm-sc": "./bin/cli.js"
   },
@@ -12,14 +14,12 @@
     "build": "tsx build.ts",
     "build:prod": "tsc && tsx build.ts"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "bottleneck": "^2.19.5",
+    "cli-progress": "^3.12.0",
     "kleur": "^4.1.5",
     "minimist": "^1.2.8",
-    "semver": "^7.5.4",
-    "cli-progress": "^3.12.0"
+    "semver": "^7.5.4"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.0.0",

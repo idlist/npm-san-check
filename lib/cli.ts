@@ -11,14 +11,14 @@ const args = minimist(argv.slice(2))
 
 const options: CheckerOptions = {
   update: false,
-  force: false,
+  latest: false,
 }
 
 if (args.u || args.update) {
   options.update = true
 }
-if (args.f || args.force) {
-  options.force = true
+if (args.l || args.latest) {
+  options.latest = true
 }
 
 let rawJson
