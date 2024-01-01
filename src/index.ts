@@ -3,19 +3,24 @@ import checkDeps from './check-deps.js'
 import displayDeps from './display-deps.js'
 import type { CheckerOptions } from './types.js'
 
-type DependencyType = 'dep' | 'dev' | 'peer' | 'optional'
+export type DependencyType = 'dep' | 'dev' | 'peer' | 'optional'
 const DependencyTypes: DependencyType[] = ['dep', 'dev', 'peer', 'optional']
 
-type CheckStatus = 'ok' | 'network' | 'semver'
+export type CheckStatusError = 'network' | 'semver'
+type CheckStatus = 'ok' | CheckStatusError
 
 export interface Dependency {
   name: string
   type: DependencyType
   current: string
+  status: CheckStatus
   newer?: string
   latest?: string
-  status: CheckStatus
 }
+
+export type DependencyChecked =
+  | { status: 'ok' } & Required<Dependency>
+  | { status: CheckStatusError } & Dependency
 
 const collectDependency = (
   record: Record<string, string>,
@@ -33,6 +38,12 @@ const check = async (json: PackageJson, options: CheckerOptions) => {
     return json[key] ? collectDependency(json[key] as Record<string, string>, type) : []
   })
 
+  if (!deps.length) {
+    console.log('No dependencies.')
+    return
+  }
+
+  deps.sort((a, b) => a.name.localeCompare(b.name))
   const checked = await checkDeps(deps)
   displayDeps(checked, options)
 }

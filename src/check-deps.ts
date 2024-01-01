@@ -2,7 +2,7 @@ import Bottleneck from 'bottleneck'
 import semver from 'semver'
 import c from 'kleur'
 import { SingleBar } from 'cli-progress'
-import type { Dependency } from './index.js'
+import type { Dependency, DependencyChecked } from './index.js'
 
 interface NpmPackagePartial {
   'dist-tags': {
@@ -22,7 +22,7 @@ const limiter = new Bottleneck({
   maxConcurrent: 5,
 })
 
-const checkDeps = async (deps: Dependency[]): Promise<Dependency[]> => {
+const checkDeps = async (deps: Dependency[]): Promise<DependencyChecked[]> => {
   const bar = new SingleBar({
     format: '[{bar}] {value}/{total} {rest}',
     barsize: Math.min(deps.length, 40),
@@ -34,7 +34,7 @@ const checkDeps = async (deps: Dependency[]): Promise<Dependency[]> => {
   bar.start(deps.length, 0, { rest: '' })
 
   const updateCheck = (name: string) => {
-    bar.increment({ rest: `-> ${c.cyan(name)}` })
+    bar.increment({ rest: `→ ${c.cyan(name)}` })
   }
 
   await Promise.all(deps.map(async (dep) => {
@@ -57,10 +57,10 @@ const checkDeps = async (deps: Dependency[]): Promise<Dependency[]> => {
       return
     }
 
+    updateCheck(dep.name)
+
     const latest = json['dist-tags'].latest
-    if (semver.neq(semver.minVersion(dep.current)!, latest)) {
-      dep.latest = latest
-    }
+    dep.latest = latest
 
     const versions = semver.sort(Object.keys(json.versions))
 
@@ -74,19 +74,19 @@ const checkDeps = async (deps: Dependency[]): Promise<Dependency[]> => {
         continue
       }
 
-      if (semver.neq(semver.minVersion(dep.current)!, latest)) {
-        dep.newer = version
-      }
+      dep.newer = version
       break
     }
 
-    updateCheck(dep.name)
+    if (!dep.newer) {
+      dep.newer = versions[versions.length - 1]
+    }
   }))
 
   bar.update({ rest: c.green('Done!') })
   bar.stop()
 
-  return deps
+  return deps as DependencyChecked[]
 }
 
 export default checkDeps

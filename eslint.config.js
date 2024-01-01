@@ -46,7 +46,6 @@ export default [
 
       '@typescript-eslint/no-empty-function': 'warn',
       '@typescript-eslint/no-unused-vars': 'warn',
-      '@typescript-eslint/consistent-type-imports': 'warn',
       'prefer-const': 'warn',
     },
   },

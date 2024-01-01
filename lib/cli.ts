@@ -25,7 +25,7 @@ let rawJson
 try {
   rawJson = await readFile(`${cwd()}/package.json`, { encoding: 'utf8' })
 } catch {
-  console.error(c.red('Error:'), 'There isn\'t a "package.json" file under current directory.')
+  console.error(`${c.red('Error:')} There isn\'t a ${c.green('package.json')} file under this directory.`)
   exit(1)
 }
 
@@ -33,7 +33,7 @@ let json
 try {
   json = JSON.parse(rawJson)
 } catch {
-  console.log(c.red('Error:'), 'Failed to parse "package.json".')
+  console.error(`${c.red('Error:')} Failed to parse ${c.green('package.json')}.`)
 }
 
 check(json, options)
