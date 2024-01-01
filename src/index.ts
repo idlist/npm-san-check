@@ -1,26 +1,9 @@
 import type { PackageJson } from 'type-fest'
 import depsCheck from './deps-check.js'
 import depsUpdate from './deps-update.js'
-import type { CheckerOptions } from './types.js'
+import type { CheckerOptions, DependencyType, Dependency } from './types.js'
 
-export type DependencyType = 'dep' | 'dev' | 'peer' | 'optional'
 const DependencyTypes: DependencyType[] = ['dep', 'dev', 'peer', 'optional']
-
-export type CheckStatusError = 'network' | 'semver'
-type CheckStatus = 'ok' | CheckStatusError
-
-export interface Dependency {
-  name: string
-  type: DependencyType
-  current: string
-  status: CheckStatus
-  newer?: string
-  latest?: string
-}
-
-export type DependencyChecked =
-  | { status: 'ok' } & Required<Dependency>
-  | { status: CheckStatusError } & Dependency
 
 const collectDependency = (
   record: Record<string, string>,

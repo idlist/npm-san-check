@@ -2,7 +2,7 @@ import Bottleneck from 'bottleneck'
 import semver from 'semver'
 import c from 'kleur'
 import { SingleBar } from 'cli-progress'
-import type { Dependency, DependencyChecked } from './index.js'
+import type { Dependency, DependencyChecked } from './types.js'
 
 interface NpmPackagePartial {
   'dist-tags': {

@@ -1,8 +1,8 @@
 import semver, { Range, SemVer } from 'semver'
 import c, { type Color } from 'kleur'
 import { PackageJson } from 'type-fest'
-import type { CheckStatusError, Dependency, DependencyChecked, DependencyType } from './index.js'
-import type { CheckerOptions } from './types.js'
+import depsDisplay from './deps-display.js'
+import type { CheckerOptions, CheckErrors, DependencyChecked, DependencyToUpdate } from './types.js'
 
 const cloneVer = (prev: SemVer) => semver.parse(prev.version)!
 
@@ -43,29 +43,11 @@ const colorVer = (prev: SemVer, next: SemVer): string | undefined => {
   return undefined
 }
 
-const colorType = (type: DependencyType) => {
-  switch (type) {
-    case 'dep':
-      return '    '
-    case 'dev':
-      return `${c.yellow('d')}${c.gray('ev')} `
-    case 'peer':
-      return `${c.magenta('p')}${c.gray('eer')}`
-    case 'optional':
-      return `${c.cyan('o')}${c.gray('pt')} `
-  }
-}
-
-interface CharsCount {
+export interface CharsCount {
   name: number
   current: number
   newer: number
   latest: number
-}
-
-interface DependencyToUpdate extends Omit<Dependency, 'status'> {
-  newerColored?: string
-  latestColored?: string
 }
 
 const depsUpdate = (json: PackageJson, deps: DependencyChecked[], options: CheckerOptions) => {
@@ -78,7 +60,7 @@ const depsUpdate = (json: PackageJson, deps: DependencyChecked[], options: Check
     latest: 0,
   }
 
-  const errors: Record<CheckStatusError, string[]> = {
+  const errors: CheckErrors = {
     semver: [],
     network: [],
   }
@@ -134,55 +116,7 @@ const depsUpdate = (json: PackageJson, deps: DependencyChecked[], options: Check
     }
   })
 
-  const showType = toUpdate.filter((item) => item.type != 'dep').length
-
-  console.log(
-    `\n ${c.cyan('n')}ame${' '.repeat(chars.name - 4)}  `
-    + (showType ? '      ' : '')
-    + ' '.repeat(chars.current + 5)
-    + (chars.newer ? `${' '.repeat(chars.newer - 5)}${c.green('n')}ewer  ` : '')
-    + (chars.latest ? `${' '.repeat(chars.latest - 6)}${c.magenta('l')}atest` : ''),
-  )
-
-  for (const dep of toUpdate) {
-    console.log(
-      ` ${dep.name}${' '.repeat(chars.name - dep.name.length)}  `
-      + (showType ? `${colorType(dep.type)}  ` : '')
-      + `${' '.repeat(chars.current - dep.current.length)}${dep.current}  →  `
-      + (chars.newer && dep.newer
-        ? `${' '.repeat(chars.newer - dep.newer.length)}${dep.newerColored}  `
-        : '')
-      + (chars.latest && dep.latest ?
-        `${' '.repeat(chars.latest - dep.latest.length)}${dep.latestColored}`
-        : ''),
-    )
-  }
-
-  if (options.update) {
-    console.log('')
-    console.log(
-      `\nUse ${c.cyan('npm install')} to install the `
-      + (options.latest ? `${c.magenta('l')}atest` : `${c.green('n')}ewer`)
-      + ' versions.',
-    )
-    console.log(
-      `A ${c.green('package.bak.json')} is generated in case version control is not used.`,
-    )
-  } else {
-    console.log('')
-    if (chars.newer) {
-      console.log(
-        `\nRun ${c.cyan('npm-sc -u')} to update ${c.green('package.json')} `
-        + `to ${c.green('n')}ewer versions.`,
-      )
-    }
-    if (chars.latest) {
-      console.log(
-        `Run ${c.cyan('npm-sc -u')}${c.magenta('l')} to update ${c.green('package.json')} `
-        + `to ${c.magenta('l')}atest versions.`,
-      )
-    }
-  }
+  depsDisplay(toUpdate, chars, errors, options)
 }
 
 export default depsUpdate
