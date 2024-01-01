@@ -37,8 +37,10 @@ const depsCheck = async (deps: Dependency[]): Promise<DependencyChecked[]> => {
     bar.increment({ rest: `→ ${c.cyan(name)}` })
   }
 
-  await Promise.all(deps.map(async (dep) => {
-    if (!semver.validRange(dep.current)) {
+  await Promise.all(deps.map(async (dep): Promise<void> => {
+    dep.current = dep.current.replace(/(?<!-) (?![-=<>])/g, '')
+
+    if (!semver.validRange(dep.current, { loose: true })) {
       dep.status = 'semver'
       updateCheck(dep.name)
       return

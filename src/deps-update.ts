@@ -1,8 +1,8 @@
-import semver, { Range, SemVer } from 'semver'
+import semver, { type SemVer } from 'semver'
 import c, { type Color } from 'kleur'
 import { PackageJson } from 'type-fest'
-import depsDisplay from './deps-display.js'
 import type { CheckerOptions, CheckErrors, DependencyChecked, DependencyToUpdate } from './types.js'
+import parseRange from './parse-range.js'
 
 const cloneVer = (prev: SemVer) => semver.parse(prev.version)!
 
@@ -40,7 +40,7 @@ const colorVer = (prev: SemVer, next: SemVer): string | undefined => {
     return c.bgRed().black(next.version)
   }
 
-  return undefined
+  return
 }
 
 export interface CharsCount {
@@ -83,12 +83,13 @@ const depsUpdate = (json: PackageJson, deps: DependencyChecked[], options: Check
       type: dep.type,
       current: dep.current,
     }
-    const range = new Range(dep.current)
 
-    const min = semver.minVersion(range)!
+    const range = parseRange(dep.current)
+
+    const prev = semver.minVersion(dep.current)!
     const latest = semver.parse(dep.latest)!
 
-    const latestColored = colorVer(min, latest)
+    const latestColored = colorVer(prev, latest)
     if (latestColored) {
       line.latest = `^${dep.latest}`
       line.latestColored = `^${latestColored}`
@@ -105,18 +106,7 @@ const depsUpdate = (json: PackageJson, deps: DependencyChecked[], options: Check
     }
   }
 
-  if (!toUpdate.length) {
-    console.log(`\nAll dependencies are up to date! ${c.green(':3')}`)
-    return
-  }
-
-  (['name', 'newer', 'latest'] as const).map((key) => {
-    if (chars[key] && key.length > chars[key]) {
-      chars[key] = key.length
-    }
-  })
-
-  depsDisplay(toUpdate, chars, errors, options)
+  return { toUpdate, chars, errors }
 }
 
 export default depsUpdate

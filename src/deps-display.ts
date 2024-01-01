@@ -21,6 +21,40 @@ const depsDisplay = (
   errors: CheckErrors,
   options: CheckerOptions,
 ) => {
+  const errored = () => errors.semver.length || errors.network.length
+
+  if (errored()) {
+    console.log('')
+  }
+  if (errors.semver.length) {
+    console.log(
+      `Package ${errors.semver.map((name) => c.red(name)).join(', ')} `
+      + (errors.semver.length == 1
+        ? 'has invalid semver range, and is skipped.'
+        : 'have invalid semver ranges, and are skipped.'),
+    )
+  }
+  if (errors.network.length) {
+    console.log(
+      `Package ${errors.semver.map((name) => c.red(name)).join(', ')} `
+      + (errors.network.length == 1 ? 'is' : 'are')
+      + 'not checked due to connection error to npm\'s API.',
+    )
+  }
+
+  if (!toUpdate.length) {
+    if (!errored()) {
+      console.log(`\nAll dependencies are up to date! ${c.green(':3')}`)
+    }
+    return
+  }
+
+  (['name', 'newer', 'latest'] as const).map((key) => {
+    if (chars[key] && key.length > chars[key]) {
+      chars[key] = key.length
+    }
+  })
+
   const showType = toUpdate.filter((item) => item.type != 'dep').length
 
   console.log(
