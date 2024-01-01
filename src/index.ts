@@ -1,6 +1,6 @@
 import type { PackageJson } from 'type-fest'
-import checkDeps from './check-deps.js'
-import displayDeps from './display-deps.js'
+import depsCheck from './deps-check.js'
+import depsUpdate from './deps-update.js'
 import type { CheckerOptions } from './types.js'
 
 export type DependencyType = 'dep' | 'dev' | 'peer' | 'optional'
@@ -44,8 +44,8 @@ const check = async (json: PackageJson, options: CheckerOptions) => {
   }
 
   deps.sort((a, b) => a.name.localeCompare(b.name))
-  const checked = await checkDeps(deps)
-  displayDeps(checked, options)
+  const checked = await depsCheck(deps)
+  depsUpdate(json, checked, options)
 }
 
 export default check

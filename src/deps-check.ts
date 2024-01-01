@@ -22,7 +22,7 @@ const limiter = new Bottleneck({
   maxConcurrent: 5,
 })
 
-const checkDeps = async (deps: Dependency[]): Promise<DependencyChecked[]> => {
+const depsCheck = async (deps: Dependency[]): Promise<DependencyChecked[]> => {
   const bar = new SingleBar({
     format: '[{bar}] {value}/{total} {rest}',
     barsize: Math.min(deps.length, 40),
@@ -89,4 +89,4 @@ const checkDeps = async (deps: Dependency[]): Promise<DependencyChecked[]> => {
   return deps as DependencyChecked[]
 }
 
-export default checkDeps
+export default depsCheck

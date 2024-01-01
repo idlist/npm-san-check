@@ -1,11 +1,12 @@
 import semver, { Range, SemVer } from 'semver'
-import c from 'kleur'
+import c, { type Color } from 'kleur'
+import { PackageJson } from 'type-fest'
 import type { CheckStatusError, Dependency, DependencyChecked, DependencyType } from './index.js'
 import type { CheckerOptions } from './types.js'
 
 const cloneVer = (prev: SemVer) => semver.parse(prev.version)!
 
-const coloredLatest = (prev: SemVer, next: SemVer): string | undefined => {
+const colorVer = (prev: SemVer, next: SemVer): string | undefined => {
   const nextMajor = cloneVer(prev).inc('major')
   if (semver.gte(next, nextMajor)) {
     return c.red(next.version)
@@ -13,12 +14,26 @@ const coloredLatest = (prev: SemVer, next: SemVer): string | undefined => {
 
   const nextMinor = cloneVer(prev).inc('minor')
   if (semver.gte(next, nextMinor)) {
-    return `${next.major}.${c.cyan(`${next.minor}.${next.patch}`)}`
+    let color: Color
+    if (prev.major == 0) {
+      color = c.red
+    } else {
+      color = c.cyan
+    }
+    return `${next.major}.${color(`${next.minor}.${next.patch}`)}`
   }
 
   const nextPatch = cloneVer(prev).inc('patch')
   if (semver.gte(next, nextPatch)) {
-    return `${next.major}.${next.minor}.${c.green(next.patch)}`
+    let color: Color
+    if (prev.minor == 0) {
+      color = c.red
+    } else if (prev.major == 0) {
+      color = c.cyan
+    } else {
+      color = c.green
+    }
+    return `${next.major}.${next.minor}.${color(next.patch)}`
   }
 
   if (semver.lt(next, prev)) {
@@ -28,7 +43,7 @@ const coloredLatest = (prev: SemVer, next: SemVer): string | undefined => {
   return undefined
 }
 
-const coloredType = (type: DependencyType) => {
+const colorType = (type: DependencyType) => {
   switch (type) {
     case 'dep':
       return '    '
@@ -41,15 +56,22 @@ const coloredType = (type: DependencyType) => {
   }
 }
 
-interface DependencyDisplay extends Omit<Dependency, 'status'> {
+interface CharsCount {
+  name: number
+  current: number
+  newer: number
+  latest: number
+}
+
+interface DependencyToUpdate extends Omit<Dependency, 'status'> {
   newerColored?: string
   latestColored?: string
 }
 
-const displayDeps = (deps: DependencyChecked[], options: CheckerOptions) => {
-  const displays: DependencyDisplay[] = []
+const depsUpdate = (json: PackageJson, deps: DependencyChecked[], options: CheckerOptions) => {
+  const toUpdate: DependencyToUpdate[] = []
 
-  const chars = {
+  const chars: CharsCount = {
     name: 0,
     current: 0,
     newer: 0,
@@ -74,22 +96,20 @@ const displayDeps = (deps: DependencyChecked[], options: CheckerOptions) => {
       continue
     }
 
-    const line: DependencyDisplay = {
+    const line: DependencyToUpdate = {
       name: dep.name,
       type: dep.type,
       current: dep.current,
     }
     const range = new Range(dep.current)
 
-    if (options.latest) {
-      const min = semver.minVersion(range)!
-      const latest = semver.parse(dep.latest)!
+    const min = semver.minVersion(range)!
+    const latest = semver.parse(dep.latest)!
 
-      const colored = coloredLatest(min, latest)
-      if (colored) {
-        line.latest = `^${dep.latest}`
-        line.latestColored = `^${colored}`
-      }
+    const latestColored = colorVer(min, latest)
+    if (latestColored) {
+      line.latest = `^${dep.latest}`
+      line.latestColored = `^${latestColored}`
     }
 
     if (line.newer || line.latest) {
@@ -99,11 +119,11 @@ const displayDeps = (deps: DependencyChecked[], options: CheckerOptions) => {
         }
       })
 
-      displays.push(line)
+      toUpdate.push(line)
     }
   }
 
-  if (!displays.length) {
+  if (!toUpdate.length) {
     console.log(`\nAll dependencies are up to date! ${c.green(':3')}`)
     return
   }
@@ -114,7 +134,7 @@ const displayDeps = (deps: DependencyChecked[], options: CheckerOptions) => {
     }
   })
 
-  const showType = displays.filter((item) => item.type != 'dep').length
+  const showType = toUpdate.filter((item) => item.type != 'dep').length
 
   console.log(
     `\n ${c.cyan('n')}ame${' '.repeat(chars.name - 4)}  `
@@ -124,27 +144,45 @@ const displayDeps = (deps: DependencyChecked[], options: CheckerOptions) => {
     + (chars.latest ? `${' '.repeat(chars.latest - 6)}${c.magenta('l')}atest` : ''),
   )
 
-  for (const dep of displays) {
+  for (const dep of toUpdate) {
     console.log(
       ` ${dep.name}${' '.repeat(chars.name - dep.name.length)}  `
-      + (showType ? `${coloredType(dep.type)}  ` : '')
+      + (showType ? `${colorType(dep.type)}  ` : '')
       + `${' '.repeat(chars.current - dep.current.length)}${dep.current}  →  `
-      + (chars.newer && dep.newer ? `${' '.repeat(chars.newer - dep.newer.length)}${dep.newerColored}  ` : '')
-      + (chars.latest && dep.latest ? `${' '.repeat(chars.latest - dep.latest.length)}${dep.latestColored}` : ''),
+      + (chars.newer && dep.newer
+        ? `${' '.repeat(chars.newer - dep.newer.length)}${dep.newerColored}  `
+        : '')
+      + (chars.latest && dep.latest ?
+        `${' '.repeat(chars.latest - dep.latest.length)}${dep.latestColored}`
+        : ''),
     )
   }
 
   if (options.update) {
-    console.log(`\nUse ${c.cyan('npm install')} to install the `
+    console.log('')
+    console.log(
+      `\nUse ${c.cyan('npm install')} to install the `
       + (options.latest ? `${c.magenta('l')}atest` : `${c.green('n')}ewer`)
-      + ' versions.')
-    console.log(`A ${c.green('package.bak.json')} is generated in case version control is not used.`)
+      + ' versions.',
+    )
+    console.log(
+      `A ${c.green('package.bak.json')} is generated in case version control is not used.`,
+    )
   } else {
-    console.log(`\nRun ${c.cyan('npm-sc -u')}${options.latest ? c.magenta('l') : ''} `
-      + `to update ${c.green('package.json')} to the `
-      + (options.latest ? `${c.magenta('l')}atest` : `${c.green('n')}ewer`)
-      + ' versions.')
+    console.log('')
+    if (chars.newer) {
+      console.log(
+        `\nRun ${c.cyan('npm-sc -u')} to update ${c.green('package.json')} `
+        + `to ${c.green('n')}ewer versions.`,
+      )
+    }
+    if (chars.latest) {
+      console.log(
+        `Run ${c.cyan('npm-sc -u')}${c.magenta('l')} to update ${c.green('package.json')} `
+        + `to ${c.magenta('l')}atest versions.`,
+      )
+    }
   }
 }
 
-export default displayDeps
+export default depsUpdate
