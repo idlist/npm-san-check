@@ -6,16 +6,25 @@
   "author": "i'DLisT <i@idl.ist> (https://idl.ist/)",
   "license": "MIT",
   "main": "./bin/cli.js",
+  "homepage": "https://github.com/idlist/npm-san-check#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/idlist/npm-san-check.git"
+  },
+  "bugs": {
+    "url": "https://github.com/idlist/npm-san-check"
+  },
   "bin": {
     "npm-sc": "./bin/cli.js"
   },
   "scripts": {
     "dev": "tsx lib/cli.ts",
     "build": "tsx build.ts",
-    "build:prod": "tsc && tsx build.ts"
+    "build:prod": "tsc && tsx build.ts",
+    "lint": "eslint . --fix"
   },
   "dependencies": {
-    "bottleneck": "^2.19.1",
+    "bottleneck": "^2.19.5",
     "cli-progress": "^3.12.0",
     "kleur": "^4.1.5",
     "minimist": "^1.2.8",

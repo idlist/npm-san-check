@@ -38,6 +38,7 @@ const depsCheck = async (deps: Dependency[]): Promise<DependencyChecked[]> => {
   }
 
   await Promise.all(deps.map(async (dep): Promise<void> => {
+    // Clear redundant spaces for loose validation.
     dep.current = dep.current.replace(/(?<!-) (?![-=<>])/g, '')
 
     if (!semver.validRange(dep.current, { loose: true })) {
