@@ -38,7 +38,7 @@ const depsDisplay = (
     console.log(
       `Package ${errors.semver.map((name) => c.red(name)).join(', ')} `
       + (errors.network.length == 1 ? 'is' : 'are')
-      + 'not checked due to connection error to npm\'s API.',
+      + ' not checked due to connection error to npm\'s API.',
     )
   }
 

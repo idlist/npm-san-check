@@ -29,7 +29,7 @@ const check = async (json: PackageJson, options: CheckerOptions) => {
 
   deps.sort((a, b) => a.name.localeCompare(b.name))
 
-  const checked = await depsCheck(deps.slice(0, 1))
+  const checked = await depsCheck(deps.slice(0))
 
   const updated = depsUpdate(json, checked, options)
   if (updated) {

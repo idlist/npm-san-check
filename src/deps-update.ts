@@ -2,7 +2,7 @@ import semver, { type SemVer } from 'semver'
 import c, { type Color } from 'kleur'
 import { PackageJson } from 'type-fest'
 import type { CheckerOptions, CheckErrors, DependencyChecked, DependencyToUpdate } from './types.js'
-import parseRange from './parse-range.js'
+import readableRange from './semver-range.js'
 
 const cloneVer = (prev: SemVer) => semver.parse(prev.version)!
 
@@ -84,7 +84,7 @@ const depsUpdate = (json: PackageJson, deps: DependencyChecked[], options: Check
       current: dep.current,
     }
 
-    const range = parseRange(dep.current)
+    const range = readableRange(dep.current)
 
     const prev = semver.minVersion(dep.current)!
     const latest = semver.parse(dep.latest)!
