@@ -9,7 +9,7 @@ Yet another `package.json` update checker.
 ## Usage
 
 ```
-npm-sc [-u | --update] [-l | --latest]
+npm-sc [...filters] [-u | --update] [-l | --latest]
 ```
 
 ## How the update is determined
@@ -29,6 +29,6 @@ Due to the nature of the rules, you might want to run an additional `npm upgrade
 
 - Invalid ranges are ignored.
 - Compounded ranges (connected by `||`) are ignored for the reason above.
-- Unary ranges (`^`, `~`, `<`, `<=`, `>`, `>=`, `=` or omitted) are updated to the latest versions with the *range symbols* retained.
+- Unary ranges (`^`, `~`, `<`, `<=`, `>`, `>=`, `=` or omitted) are updated to the latest versions with the *range symbols* kept.
 - Wildcards (`*`, `x`, `X`) are preserved, though other parts might be updated to match the latest versions.
 - For hyphen (`-`), the right side is updated to the newest version.

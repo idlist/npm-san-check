@@ -45,7 +45,7 @@ export default [
       '@typescript-eslint/no-empty-interface': 'off',
 
       '@typescript-eslint/no-empty-function': 'warn',
-      '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       'prefer-const': 'warn',
     },
   },
@@ -60,7 +60,7 @@ export default [
       'no-empty': 'off',
 
       'no-empty-function': 'warn',
-      'no-unused-vars': 'warn',
+      'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       'prefer-const': 'warn',
     },
   },

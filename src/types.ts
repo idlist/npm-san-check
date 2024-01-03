@@ -1,4 +1,5 @@
 export interface CheckerOptions {
+  filters?: string[]
   update: boolean
   latest: boolean
 }

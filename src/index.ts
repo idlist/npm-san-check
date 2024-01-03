@@ -6,20 +6,38 @@ import type { CheckerOptions, DependencyType, Dependency } from './types.js'
 
 const DependencyTypes: DependencyType[] = ['dep', 'dev', 'peer', 'optional']
 
-const collectDependency = (
+const collectDeps = (
   record: Record<string, string>,
   type: DependencyType,
-): Dependency[] => Object.entries(record).flatMap(([name, version]) => ({
-  name,
-  type,
-  current: version,
-  status: 'ok',
-}))
+  filters: string[] = [],
+): Dependency[] => {
+  let entries = Object.entries(record)
+
+  if (filters.length) {
+    const regexps = filters.map((filter) => new RegExp(`^${filter.replaceAll('*', '.*')}$`))
+
+    entries = entries.filter(([name, _]) => {
+      for (const regexp of regexps) {
+        if (regexp.test(name)) {
+          return true
+        }
+      }
+      return false
+    })
+  }
+
+  return entries.flatMap(([name, version]) => ({
+    name,
+    type,
+    current: version,
+    status: 'ok',
+  }))
+}
 
 const check = async (json: PackageJson, options: CheckerOptions) => {
   const deps: Dependency[] = DependencyTypes.flatMap((type) => {
     const key = type === 'dep' ? 'dependencies' : (type + 'Dependencies')
-    return json[key] ? collectDependency(json[key] as Record<string, string>, type) : []
+    return json[key] ? collectDeps(json[key] as Record<string, string>, type, options.filters) : []
   })
 
   if (!deps.length) {

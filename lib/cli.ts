@@ -14,6 +14,9 @@ const options: CheckerOptions = {
   latest: false,
 }
 
+if (args._) {
+  options.filters = args._
+}
 if (args.u || args.update) {
   options.update = true
 }
