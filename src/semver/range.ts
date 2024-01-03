@@ -1,4 +1,4 @@
-import { type RangeBase, parseRangeBase } from './range-base.js'
+import { parseRangeBase, type RangeBase } from './range-base.js'
 
 type RangeUnaryOp = '^' | '~' | '>' | '>=' | '<' | '<=' | '=' | ''
 

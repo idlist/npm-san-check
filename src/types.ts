@@ -4,7 +4,9 @@ export interface CheckerOptions {
   latest: boolean
 }
 
-export type DependencyType = 'dep' | 'dev' | 'peer' | 'optional'
+export const DependencyTypes = ['dep', 'dev', 'peer', 'optional'] as const
+
+export type DependencyType = typeof DependencyTypes[number]
 
 export type CheckStatusError = 'network' | 'semver'
 

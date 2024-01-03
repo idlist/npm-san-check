@@ -1,8 +1,8 @@
 import semver, { type SemVer } from 'semver'
 import c, { type Color } from 'kleur'
-import { PackageJson } from 'type-fest'
 import type { CheckerOptions, CheckErrors, DependencyChecked, DependencyToUpdate } from './types.js'
 import { parseRange } from './range.js'
+import { parseRangeBase } from './range-base.js'
 
 const cloneVer = (prev: SemVer) => semver.parse(prev.version)!
 
@@ -50,7 +50,7 @@ export interface CharsCount {
   latest: number
 }
 
-const depsUpdate = (json: PackageJson, deps: DependencyChecked[], options: CheckerOptions) => {
+const depsUpdate = (pkgData: string, deps: DependencyChecked[], options: CheckerOptions) => {
   const toUpdate: DependencyToUpdate[] = []
 
   const chars: CharsCount = {
@@ -86,13 +86,12 @@ const depsUpdate = (json: PackageJson, deps: DependencyChecked[], options: Check
 
     const range = parseRange(dep.current)
 
-    const prev = semver.minVersion(dep.current)!
-    const latest = semver.parse(dep.latest)!
+    if (!range) {
+      continue
+    }
 
-    const latestColored = colorVer(prev, latest)
-    if (latestColored) {
-      line.latest = `^${dep.latest}`
-      line.latestColored = `^${latestColored}`
+    if (range.type == '-') {
+      const newer = parseRangeBase(dep.newer)
     }
 
     if (line.newer || line.latest) {

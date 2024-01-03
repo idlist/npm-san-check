@@ -2,9 +2,8 @@ import type { PackageJson } from 'type-fest'
 import depsCheck from './deps-check.js'
 import depsUpdate from './deps-update.js'
 import depsDisplay from './deps-display.js'
+import { DependencyTypes } from './types.js'
 import type { CheckerOptions, DependencyType, Dependency } from './types.js'
-
-const DependencyTypes: DependencyType[] = ['dep', 'dev', 'peer', 'optional']
 
 const collectDeps = (
   record: Record<string, string>,
@@ -34,10 +33,11 @@ const collectDeps = (
   }))
 }
 
-const check = async (json: PackageJson, options: CheckerOptions) => {
+const check = async (pkgData: string, pkg: PackageJson, options: CheckerOptions) => {
   const deps: Dependency[] = DependencyTypes.flatMap((type) => {
     const key = type === 'dep' ? 'dependencies' : (type + 'Dependencies')
-    return json[key] ? collectDeps(json[key] as Record<string, string>, type, options.filters) : []
+    const deps = pkg[key] as Record<string, string>
+    return pkg[key] ? collectDeps(deps, type, options.filters) : []
   })
 
   if (!deps.length) {
@@ -47,11 +47,11 @@ const check = async (json: PackageJson, options: CheckerOptions) => {
 
   deps.sort((a, b) => a.name.localeCompare(b.name))
 
-  const checked = await depsCheck(deps.slice(0))
+  const checked = await depsCheck(deps)
 
-  const updated = depsUpdate(json, checked, options)
-  if (updated) {
-    const { toUpdate, chars, errors } = updated
+  const result = depsUpdate(pkgData, checked, options)
+  if (result) {
+    const { toUpdate, chars, errors } = result
     depsDisplay(toUpdate, chars, errors, options)
   }
 }

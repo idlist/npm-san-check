@@ -20,7 +20,7 @@ npm-sc [...filters] [-u | --update] [-l | --latest]
 - Compounded ranges (connected by `||`) are ignored as they should be treated by users carefully.
 - Equals (`=` or omitted) are not touched.
 - Other unary ranges (`^`, `~`, `<`, `<=`, `>`, `>=`) are updated to the newest versions that satisfies them.
-- Wildcards (`*`, `x`, `X`) are preserved as is.
+- Wildcards (`*`, `x`, `X`) are preserved.
 - For hyphen (`-`), the left side is updated to the newest version. If the newest version is newer than the right side, then this range becomes an equal to the right side.
 
 Due to the nature of the rules, you might want to run an additional `npm upgrade` after `npm install`.
@@ -30,5 +30,5 @@ Due to the nature of the rules, you might want to run an additional `npm upgrade
 - Invalid ranges are ignored.
 - Compounded ranges (connected by `||`) are ignored for the reason above.
 - Unary ranges (`^`, `~`, `<`, `<=`, `>`, `>=`, `=` or omitted) are updated to the latest versions with the *range symbols* kept.
-- Wildcards (`*`, `x`, `X`) are preserved, though other parts might be updated to match the latest versions.
+- Wildcards (`*`, `x`, `X`) are preserved.
 - For hyphen (`-`), the right side is updated to the newest version.

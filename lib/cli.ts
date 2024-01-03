@@ -24,19 +24,20 @@ if (args.l || args.latest) {
   options.latest = true
 }
 
-let rawJson
+let pkgData
 try {
-  rawJson = await readFile(`${cwd()}/package.json`, { encoding: 'utf8' })
+  pkgData = await readFile(`${cwd()}/package.json`, { encoding: 'utf8' })
 } catch {
   console.error(`${c.red('Error:')} There isn\'t a ${c.green('package.json')} file under this directory.`)
   exit(1)
 }
 
-let json
+let pkg
 try {
-  json = JSON.parse(rawJson)
+  pkg = JSON.parse(pkgData)
 } catch {
   console.error(`${c.red('Error:')} Failed to parse ${c.green('package.json')}.`)
+  exit(1)
 }
 
-check(json, options)
+check(pkgData, pkg, options)
