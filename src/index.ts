@@ -35,7 +35,7 @@ const collectDeps = (
 
 const check = async (pkgData: string, pkg: PackageJson, options: CheckerOptions) => {
   const deps: Dependency[] = DependencyTypes.flatMap((type) => {
-    const key = type === 'dep' ? 'dependencies' : (type + 'Dependencies')
+    const key = type == 'dep' ? 'dependencies' : (type + 'Dependencies')
     const deps = pkg[key] as Record<string, string>
     return pkg[key] ? collectDeps(deps, type, options.filters) : []
   })
@@ -45,7 +45,7 @@ const check = async (pkgData: string, pkg: PackageJson, options: CheckerOptions)
     return
   }
 
-  deps.sort((a, b) => a.name.localeCompare(b.name))
+  deps.sort((a, b) => a.name < b.name ? -1 : 1)
 
   const checked = await depsCheck(deps)
 

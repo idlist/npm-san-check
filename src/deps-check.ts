@@ -65,24 +65,29 @@ const depsCheck = async (deps: Dependency[]): Promise<DependencyChecked[]> => {
     const latest = json['dist-tags'].latest
     dep.latest = latest
 
-    const versions = semver.sort(Object.keys(json.versions))
+    const versions = semver.sort(Object.keys(json.versions).map((s) => semver.parse(s)!))
 
     for (let i = versions.length - 1; i >= 0; i--) {
       const version = versions[i]
+      const value = version.version
 
-      if (json.versions[version].deprecated) {
+      if (json.versions[value].deprecated) {
+        continue
+      }
+
+      if (version.prerelease.length != 0) {
         continue
       }
       if (!semver.satisfies(version, dep.current)) {
         continue
       }
 
-      dep.newer = version
+      dep.newer = value
       break
     }
 
     if (!dep.newer) {
-      dep.newer = versions[versions.length - 1]
+      dep.newer = versions[versions.length - 1].version
     }
   }))
 

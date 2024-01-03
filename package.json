@@ -21,7 +21,8 @@
     "dev": "tsx lib/cli.ts",
     "build": "tsx build.ts",
     "build:prod": "tsc && tsx build.ts",
-    "lint": "eslint . --fix"
+    "lint": "eslint .",
+    "fix": "eslint . --fix"
   },
   "dependencies": {
     "bottleneck": "^2.19.5",

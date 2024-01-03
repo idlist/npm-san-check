@@ -1,8 +1,8 @@
 import semver, { type SemVer } from 'semver'
 import c, { type Color } from 'kleur'
+import { parseRange } from './semver/range.js'
+import { takeSemver } from './semver/semver.js'
 import type { CheckerOptions, CheckErrors, DependencyChecked, DependencyToUpdate } from './types.js'
-import { parseRange } from './range.js'
-import { parseRangeBase } from './range-base.js'
 
 const cloneVer = (prev: SemVer) => semver.parse(prev.version)!
 
@@ -91,7 +91,7 @@ const depsUpdate = (pkgData: string, deps: DependencyChecked[], options: Checker
     }
 
     if (range.type == '-') {
-      const newer = parseRangeBase(dep.newer)
+      const newer = takeSemver(semver.parse(dep.newer)!)
     }
 
     if (line.newer || line.latest) {

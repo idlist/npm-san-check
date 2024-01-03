@@ -1,5 +1,5 @@
 import c, { Color } from 'kleur'
-import { SemverParts, type SemverPart, type Semver } from './semver.js'
+import { SemverParts, type PrereleaseArray, type Semver, type SemverPart } from './semver.js'
 import { isWildcard, isWildcardOrNumber, parseIntOrWildcard, type WildcardChar } from './wildcard.js'
 
 export interface RangeBase {
@@ -8,10 +8,9 @@ export interface RangeBase {
   includeMinor: boolean
   patch: number | WildcardChar
   includePatch: boolean
-  prerelease: string[]
+  prerelease: PrereleaseArray
   includePrerelease: boolean
   build: string[]
-  includeBuild: boolean
 }
 
 export const parseRangeBase = (raw: string) => {
@@ -35,18 +34,19 @@ export const parseRangeBase = (raw: string) => {
     includePatch = true
   }
 
-  let prerelease: string[] = []
+  let prerelease: PrereleaseArray = []
   let includePrerelease = false
   if (prereleaseRaw) {
-    prerelease = prereleaseRaw.split('.')
+    prerelease = prereleaseRaw
+      .split('.')
+      .filter((s) => /^[0-9A-Za-z]+$/.test(s))
+      .map((s) => /^\d+$/.test(s) ? parseInt(s) : s)
     includePrerelease = true
   }
 
   let build: string[] = []
-  let includeBuild = false
   if (buildRaw) {
-    build = buildRaw.split('.')
-    includeBuild = true
+    build = buildRaw.split('.').filter((s) => /^[0-9A-Za-z]+$/.test(s))
   }
 
   return {
@@ -58,11 +58,61 @@ export const parseRangeBase = (raw: string) => {
     prerelease,
     includePrerelease,
     build,
-    includeBuild,
   }
 }
 
-type RangeBaseColor = Partial<Record<SemverPart, Color>>
+interface ComparedPrereleaseEqual {
+  result: 0
+}
+
+interface ComparedPrereleaseInequal {
+  result: -1 | 1
+  index: number
+}
+
+type ComparedPrerelease = ComparedPrereleaseEqual | ComparedPrereleaseInequal
+
+export const comparePrerelease = (a: PrereleaseArray, b: PrereleaseArray): ComparedPrerelease => {
+  const length = a.length < b.length ? a.length : b.length
+
+  for (let i = 0; i < length; i++) {
+    if (typeof a[i] == typeof b[i]) {
+      if (a[i] != b[i]) {
+        return {
+          result: a[i] < b[i] ? -1 : 1,
+          index: i,
+        }
+      }
+    } else if (typeof a[i] == 'number' && typeof b[i] == 'string') {
+      return {
+        result: -1,
+        index: i,
+      }
+    } else if (typeof a[i] == 'string' && typeof b[i] == 'number') {
+      return {
+        result: 1,
+        index: i,
+      }
+    }
+  }
+
+  if (a.length == b.length) {
+    return {
+      result: 0,
+    }
+  } else {
+    return {
+      result: a.length < b.length ? -1 : 1,
+      index: length,
+    }
+  }
+}
+
+const ColoredParts = ['major', 'minor', 'patch', 'prereleaseA', 'prereleaseB'] as const
+
+type ColoredPart = typeof ColoredParts[number]
+
+type RangeBaseColor = Partial<Record<ColoredPart, Color>>
 
 const none = c.white
 
@@ -70,25 +120,42 @@ const useColor = (part: number | WildcardChar, color?: Color) => {
   return isWildcard(part) && color ? color : none
 }
 
-export const formatRangeBase = (base: RangeBase, color: RangeBaseColor = {}) => {
+interface FormatRangeOptions {
+  index: number
+  build: boolean
+}
+
+export const formatRangeBase = (
+  base: RangeBase,
+  color: RangeBaseColor = {},
+  options: Partial<FormatRangeOptions> = {},
+) => {
+  const v = {
+    index: 0,
+    build: false,
+    ...options,
+  }
+
+  const is = (cond: boolean, content: string) => cond ? content : ''
   const major = useColor(base.major, color.major)
   const minor = useColor(base.minor, color.minor)
   const patch = useColor(base.patch, color.patch)
-  const prerelease = color.prerelease ?? none
-  const build = color.build ?? none
+  const preA = color.prereleaseA ?? none
+  const preB = color.prereleaseB ?? none
 
   return major(`${base.major}`)
-    + (base.includeMinor ? major('.') + minor(`${base.minor}`) : '')
-    + (base.includePatch ? minor('.') + patch(`${base.patch}`) : '')
-    + (base.includePrerelease ? patch('-') + prerelease(base.prerelease.join('.')) : '')
-    + (base.includeBuild ? prerelease('+') + build(base.build.join('.')) : '')
+    + is(base.includeMinor, major('.') + minor(`${base.minor}`))
+    + is(base.includePatch, minor('.') + patch(`${base.patch}`))
+    + is(base.includePrerelease, patch('-') + preA(base.prerelease.slice(0, v.index).join('.')))
+    + is(base.includePrerelease, preA('.') + preB(base.prerelease.slice(v.index).join('.')))
+    + is(v.build, `+${base.build.join('.')}`)
 }
 
-export const useRangeColorByPart = (key: SemverPart, color: Color): RangeBaseColor => {
+export const useRangeColorByPart = (key: ColoredPart, color: Color): RangeBaseColor => {
   let currentColor: Color | undefined
   const used: RangeBaseColor = {}
 
-  for (const part of SemverParts) {
+  for (const part of ColoredParts) {
     if (part == key) {
       currentColor = color
     }
@@ -102,71 +169,107 @@ export const useRangeColorByPart = (key: SemverPart, color: Color): RangeBaseCol
 
 const clone = structuredClone
 
-interface UpdatedRangeBase {
-  result: -1 | 0 | 1
-  to: string
-  toColored: string
-}
-
-export const overrideRangeBaseFrom = (lhs: RangeBase, rhs: Semver, part: SemverPart): RangeBase => {
-  const cloned = clone(lhs)
+export const overrideRangeBaseFrom = (from: RangeBase, to: Semver, part: SemverPart): RangeBase => {
+  const cloned = clone(from)
   const pos = SemverParts.findIndex((value) => value == part)
 
   for (let i = pos; i < SemverParts.length; i++) {
     const key = SemverParts[i]
-    cloned[key] = clone(rhs[key]) as never
+    cloned[key] = clone(to[key]) as never
   }
 
   return cloned
 }
 
-export const updateRangeBase = (lhs: RangeBase, rhs: Semver): UpdatedRangeBase => {
-  if (isWildcardOrNumber(lhs.major)) {
-    const to = lhs.major
+interface UpdateRangeBaseOptions {
+  prerelease: boolean
+}
+
+interface UpdatedRangeBase {
+  result: -1 | 0 | 1
+  updated: string
+  updatedColored: string
+}
+
+export const updateRangeBase = (
+  from: RangeBase,
+  to: Semver,
+  options: Partial<UpdateRangeBaseOptions>,
+): UpdatedRangeBase => {
+  const v: UpdateRangeBaseOptions = {
+    prerelease: false,
+    ...options,
+  }
+
+  if (isWildcardOrNumber(from.major)) {
+    const updated = from.major
 
     return {
       result: 0,
-      to,
-      toColored: to,
+      updated,
+      updatedColored: updated,
     }
-  } else if (lhs.major != rhs.major) {
-    const to = overrideRangeBaseFrom(lhs, rhs, 'major')
+  } else if (from.major != to.major) {
+    const updated = overrideRangeBaseFrom(from, to, 'major')
 
-    if (lhs.major > rhs.major) {
+    if (from.major < to.major) {
       return {
-        result: 1,
-        to: formatRangeBase(to),
-        toColored: formatRangeBase(to, useRangeColorByPart('major', c.red)),
+        result: -1,
+        updated: formatRangeBase(updated),
+        updatedColored: formatRangeBase(updated, useRangeColorByPart('major', c.bgRed().black)),
       }
     } else {
       return {
-        result: -1,
-        to: formatRangeBase(to),
-        toColored: formatRangeBase(to, useRangeColorByPart('major', c.bgRed().black)),
+        result: 1,
+        updated: formatRangeBase(updated),
+        updatedColored: formatRangeBase(updated, useRangeColorByPart('major', c.red)),
       }
     }
-  } else if (isWildcardOrNumber(lhs.minor)) {
-    const to = `${lhs.major}.${lhs.minor}`
+  } else if (isWildcardOrNumber(from.minor)) {
+    const updated = `${from.major}.${from.minor}`
 
     return {
       result: 0,
-      to,
-      toColored: to,
+      updated,
+      updatedColored: updated,
     }
-  } else if (lhs.minor != rhs.minor) {
-    const to = overrideRangeBaseFrom(lhs, rhs, 'major')
+  } else if (from.minor != to.minor) {
+    const updated = overrideRangeBaseFrom(from, to, 'minor')
 
-  } else if (isWildcardOrNumber(lhs.patch)) {
+    if (from.minor < to.minor) {
+      return {
+        result: -1,
+        updated: formatRangeBase(updated),
+        updatedColored: formatRangeBase(updated, useRangeColorByPart('minor', c.bgRed().black)),
+      }
+    } else {
+      let color: Color
 
-  } else if (lhs.patch != rhs.patch) {
+      if (from.major == 0) {
+        color = c.red
+      } else {
+        color = c.blue
+      }
 
-  } else {
-    const to = formatRangeBase(clone(lhs))
-
-    return {
-      result: 0,
-      to,
-      toColored: to,
+      return {
+        result: 1,
+        updated: formatRangeBase(updated),
+        updatedColored: formatRangeBase(updated, useRangeColorByPart('minor', color)),
+      }
     }
+  } else if (isWildcardOrNumber(from.patch)) {
+
+  } else if (from.patch != to.patch) {
+
+  } else if (v.prerelease) {
+
+  }
+
+  const updated = formatRangeBase(clone(from))
+
+  return {
+    result: 0,
+    updated,
+    updatedColored: updated,
   }
 }
