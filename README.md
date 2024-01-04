@@ -9,26 +9,26 @@ Yet another `package.json` update checker.
 ## Usage
 
 ```
-npm-sc [...filters] [-u | --update] [-l | --latest]
+npm-sc [...filters] [-u | --update] [-l | --latest] [--pre | --prerelease]
 ```
 
 ## How the update is determined
+
+*Due to the nature of the rules, you might want to run an additional* `npm upgrade` *after* `npm install`.
 
 ### "Newer"
 
 - Invalid ranges are ignored.
 - Compounded ranges (connected by `||`) are ignored as they should be treated by users carefully.
-- Equals (`=` or omitted) are not touched.
-- Other unary ranges (`^`, `~`, `<`, `<=`, `>`, `>=`) are updated to the newest versions that satisfies them.
+- Ranges with hyphen (`-`) are ignored, as most of the time, using them is to avoid using the newest version
+- Equals (`=` or omitted) and less than (`<`, `<=`) are ignored.
+- Other unary ranges (`^`, `~`, `>`, `>=`) are updated to the newest versions that satisfies them, with the *range symbols* kept.
 - Wildcards (`*`, `x`, `X`) are preserved.
-- For hyphen (`-`), the left side is updated to the newest version. If the newest version is newer than the right side, then this range becomes an equal to the right side.
-
-Due to the nature of the rules, you might want to run an additional `npm upgrade` after `npm install`.
 
 ### "Latest"
 
 - Invalid ranges are ignored.
 - Compounded ranges (connected by `||`) are ignored for the reason above.
+- For hyphen (`-`), the right side is updated to the newest version.
 - Unary ranges (`^`, `~`, `<`, `<=`, `>`, `>=`, `=` or omitted) are updated to the latest versions with the *range symbols* kept.
 - Wildcards (`*`, `x`, `X`) are preserved.
-- For hyphen (`-`), the right side is updated to the newest version.

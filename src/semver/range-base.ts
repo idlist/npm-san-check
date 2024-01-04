@@ -1,5 +1,5 @@
 import c, { Color } from 'kleur'
-import { SemverParts, type PrereleaseArray, type Semver, type SemverPart } from './semver.js'
+import { SemverParts, type Prerelease, type Semver, type SemverPart } from './semver.js'
 import { isWildcard, isWildcardOrNumber, parseIntOrWildcard, type WildcardChar } from './wildcard.js'
 
 export interface RangeBase {
@@ -8,7 +8,7 @@ export interface RangeBase {
   includeMinor: boolean
   patch: number | WildcardChar
   includePatch: boolean
-  prerelease: PrereleaseArray
+  prerelease: Prerelease
   includePrerelease: boolean
   build: string[]
 }
@@ -34,7 +34,7 @@ export const parseRangeBase = (raw: string) => {
     includePatch = true
   }
 
-  let prerelease: PrereleaseArray = []
+  let prerelease: Prerelease = []
   let includePrerelease = false
   if (prereleaseRaw) {
     prerelease = prereleaseRaw
@@ -72,7 +72,7 @@ interface ComparedPrereleaseInequal {
 
 type ComparedPrerelease = ComparedPrereleaseEqual | ComparedPrereleaseInequal
 
-export const comparePrerelease = (a: PrereleaseArray, b: PrereleaseArray): ComparedPrerelease => {
+export const comparePrerelease = (a: Prerelease, b: Prerelease): ComparedPrerelease => {
   const length = a.length < b.length ? a.length : b.length
 
   for (let i = 0; i < length; i++) {
@@ -225,44 +225,96 @@ export const updateRangeBase = (
         updatedColored: formatRangeBase(updated, useRangeColorByPart('major', c.red)),
       }
     }
-  } else if (isWildcardOrNumber(from.minor)) {
-    const updated = `${from.major}.${from.minor}`
+  } else if (from.includeMinor) {
+    if (isWildcardOrNumber(from.minor)) {
+      const updated = `${from.major}.${from.minor}`
 
-    return {
-      result: 0,
-      updated,
-      updatedColored: updated,
-    }
-  } else if (from.minor != to.minor) {
-    const updated = overrideRangeBaseFrom(from, to, 'minor')
-
-    if (from.minor < to.minor) {
       return {
-        result: -1,
-        updated: formatRangeBase(updated),
-        updatedColored: formatRangeBase(updated, useRangeColorByPart('minor', c.bgRed().black)),
+        result: 0,
+        updated,
+        updatedColored: updated,
       }
-    } else {
-      let color: Color
+    } else if (from.minor != to.minor) {
+      const updated = overrideRangeBaseFrom(from, to, 'minor')
 
-      if (from.major == 0) {
-        color = c.red
+      if (from.minor < to.minor) {
+        return {
+          result: -1,
+          updated: formatRangeBase(updated),
+          updatedColored: formatRangeBase(updated, useRangeColorByPart('minor', c.bgRed().black)),
+        }
       } else {
-        color = c.blue
-      }
+        let color: Color
 
-      return {
-        result: 1,
-        updated: formatRangeBase(updated),
-        updatedColored: formatRangeBase(updated, useRangeColorByPart('minor', color)),
+        if (from.major == 0) {
+          color = c.red
+        } else {
+          color = c.blue
+        }
+
+        return {
+          result: 1,
+          updated: formatRangeBase(updated),
+          updatedColored: formatRangeBase(updated, useRangeColorByPart('minor', color)),
+        }
       }
     }
-  } else if (isWildcardOrNumber(from.patch)) {
+  } else if (from.includePatch) {
+    if (isWildcardOrNumber(from.patch)) {
+      const updated = `${from.major}.${from.minor}.${from.patch}`
 
-  } else if (from.patch != to.patch) {
+      return {
+        result: 0,
+        updated,
+        updatedColored: updated,
+      }
+    } else if (from.patch != to.patch) {
+      const updated = overrideRangeBaseFrom(from, to, 'minor')
 
-  } else if (v.prerelease) {
+      if (from.patch < to.patch) {
+        return {
+          result: -1,
+          updated: formatRangeBase(updated),
+          updatedColored: formatRangeBase(updated, useRangeColorByPart('patch', c.bgRed().black)),
+        }
+      } else {
+        let color: Color
 
+        if (from.minor == 0) {
+          color = c.red
+        } else if (from.major == 0) {
+          color = c.blue
+        } else {
+          color = c.green
+        }
+
+        return {
+          result: 0,
+          updated: formatRangeBase(updated),
+          updatedColored: formatRangeBase(updated, useRangeColorByPart('patch', color)),
+        }
+      }
+    }
+  } else if (v.prerelease && from.includePrerelease) {
+    const compared = comparePrerelease(from.prerelease, to.prerelease)
+
+    if (compared.result != 0) {
+      const updated = overrideRangeBaseFrom(from, to, 'prerelease')
+
+      if (compared.result < 0) {
+        return {
+          result: -1,
+          updated: formatRangeBase(updated),
+          updatedColored: formatRangeBase(updated, useRangeColorByPart('prereleaseB', c.bgRed().black)),
+        }
+      } else {
+        return {
+          result: 1,
+          updated: formatRangeBase(updated),
+          updatedColored: formatRangeBase(updated, useRangeColorByPart('prereleaseB', c.yellow)),
+        }
+      }
+    }
   }
 
   const updated = formatRangeBase(clone(from))

@@ -1,47 +1,11 @@
-import semver, { type SemVer } from 'semver'
-import c, { type Color } from 'kleur'
+import { writeFile } from 'fs/promises'
+import { cwd } from 'process'
+import semver from 'semver'
+import c from 'kleur'
 import { parseRange } from './semver/range.js'
-import { takeSemver } from './semver/semver.js'
+import { takeSemverFrom } from './semver/semver.js'
+import { updateRangeBase } from './semver/range-base.js'
 import type { CheckerOptions, CheckErrors, DependencyChecked, DependencyToUpdate } from './types.js'
-
-const cloneVer = (prev: SemVer) => semver.parse(prev.version)!
-
-const colorVer = (prev: SemVer, next: SemVer): string | undefined => {
-  const nextMajor = cloneVer(prev).inc('major')
-  if (semver.gte(next, nextMajor)) {
-    return c.red(next.version)
-  }
-
-  const nextMinor = cloneVer(prev).inc('minor')
-  if (semver.gte(next, nextMinor)) {
-    let color: Color
-    if (prev.major == 0) {
-      color = c.red
-    } else {
-      color = c.cyan
-    }
-    return `${next.major}.${color(`${next.minor}.${next.patch}`)}`
-  }
-
-  const nextPatch = cloneVer(prev).inc('patch')
-  if (semver.gte(next, nextPatch)) {
-    let color: Color
-    if (prev.minor == 0) {
-      color = c.red
-    } else if (prev.major == 0) {
-      color = c.cyan
-    } else {
-      color = c.green
-    }
-    return `${next.major}.${next.minor}.${color(next.patch)}`
-  }
-
-  if (semver.lt(next, prev)) {
-    return c.bgRed().black(next.version)
-  }
-
-  return
-}
 
 export interface CharsCount {
   name: number
@@ -50,7 +14,19 @@ export interface CharsCount {
   latest: number
 }
 
-const depsUpdate = (pkgData: string, deps: DependencyChecked[], options: CheckerOptions) => {
+export interface DependencyUpdateResult {
+  toUpdate: DependencyToUpdate[]
+  chars: CharsCount
+  errors: CheckErrors
+}
+
+const updateDependencies = async (
+  pkgData: string,
+  deps: DependencyChecked[],
+  options: CheckerOptions,
+): Promise<DependencyUpdateResult | undefined> => {
+  const pkgDataBackup = pkgData
+
   const toUpdate: DependencyToUpdate[] = []
 
   const chars: CharsCount = {
@@ -91,7 +67,9 @@ const depsUpdate = (pkgData: string, deps: DependencyChecked[], options: Checker
     }
 
     if (range.type == '-') {
-      const newer = takeSemver(semver.parse(dep.newer)!)
+      const latest = takeSemverFrom(semver.parse(dep.latest)!)
+    } else {
+
     }
 
     if (line.newer || line.latest) {
@@ -105,7 +83,36 @@ const depsUpdate = (pkgData: string, deps: DependencyChecked[], options: Checker
     }
   }
 
+  if (toUpdate.length && options.update) {
+    console.log('')
+
+    let backedUp = false
+    try {
+      await writeFile(`${cwd()}/package.sc.json`, pkgDataBackup)
+      backedUp = true
+
+      console.log(`A backup ${c.green('package.sc.json')} is created in case version control is not used.`)
+    } catch {
+      options.update = false
+
+      console.log(
+        `${c.red('Error:')} failed to generate ${c.green('package.sc.json')}. `
+        + `The updates are not written to the ${c.green('package.json')} in case version control is not used.`,
+      )
+    }
+
+    if (backedUp) {
+      try {
+        await writeFile(`${cwd()}/package.json`, pkgData)
+
+        console.log(`Updates are written to ${c.green('package.json')}`)
+      } catch {
+        console.log(`${c.red('Error:')} failed to write to ${c.green('package.json')}.`)
+      }
+    }
+  }
+
   return { toUpdate, chars, errors }
 }
 
-export default depsUpdate
+export default updateDependencies

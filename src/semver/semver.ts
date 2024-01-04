@@ -4,17 +4,17 @@ export const SemverParts = ['major', 'minor', 'patch', 'prerelease', 'build'] as
 
 export type SemverPart = typeof SemverParts[number]
 
-export type PrereleaseArray = (number | string)[]
+export type Prerelease = (number | string)[]
 
 export interface Semver {
   major: number
   minor: number
   patch: number
-  prerelease: PrereleaseArray
+  prerelease: Prerelease
   build: string[]
 }
 
-export const takeSemver = (semver: SemVer): Semver => {
+export const takeSemverFrom = (semver: SemVer): Semver => {
   return {
     major: semver.major,
     minor: semver.minor,

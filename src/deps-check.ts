@@ -2,7 +2,7 @@ import Bottleneck from 'bottleneck'
 import semver from 'semver'
 import c from 'kleur'
 import { SingleBar } from 'cli-progress'
-import type { Dependency, DependencyChecked } from './types.js'
+import type { CheckerOptions, Dependency, DependencyChecked } from './types.js'
 
 interface NpmPackagePartial {
   'dist-tags': {
@@ -22,9 +22,12 @@ const limiter = new Bottleneck({
   maxConcurrent: 5,
 })
 
-const depsCheck = async (deps: Dependency[]): Promise<DependencyChecked[]> => {
+const checkDependencies = async (
+  deps: Dependency[],
+  options: CheckerOptions,
+): Promise<DependencyChecked[]> => {
   const bar = new SingleBar({
-    format: '[{bar}] {value}/{total} {rest}',
+    format: '[{bar}] {value}/{total}  {rest}',
     barsize: Math.min(deps.length, 40),
     barCompleteChar: '*',
     barIncompleteChar: '-',
@@ -74,8 +77,7 @@ const depsCheck = async (deps: Dependency[]): Promise<DependencyChecked[]> => {
       if (json.versions[value].deprecated) {
         continue
       }
-
-      if (version.prerelease.length != 0) {
+      if (!options.prerelease && !version.prerelease.length) {
         continue
       }
       if (!semver.satisfies(version, dep.current)) {
@@ -97,4 +99,4 @@ const depsCheck = async (deps: Dependency[]): Promise<DependencyChecked[]> => {
   return deps as DependencyChecked[]
 }
 
-export default depsCheck
+export default checkDependencies

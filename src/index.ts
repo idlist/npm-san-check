@@ -1,7 +1,7 @@
 import type { PackageJson } from 'type-fest'
-import depsCheck from './deps-check.js'
-import depsUpdate from './deps-update.js'
-import depsDisplay from './deps-display.js'
+import checkDependencies from './deps-check.js'
+import updateDependencies from './deps-update.js'
+import displayUpdatableDependencies from './deps-display.js'
 import { DependencyTypes } from './types.js'
 import type { CheckerOptions, DependencyType, Dependency } from './types.js'
 
@@ -47,12 +47,12 @@ const check = async (pkgData: string, pkg: PackageJson, options: CheckerOptions)
 
   deps.sort((a, b) => a.name < b.name ? -1 : 1)
 
-  const checked = await depsCheck(deps)
+  const checked = await checkDependencies(deps, options)
 
-  const result = depsUpdate(pkgData, checked, options)
+  const result = await updateDependencies(pkgData, checked, options)
+
   if (result) {
-    const { toUpdate, chars, errors } = result
-    depsDisplay(toUpdate, chars, errors, options)
+    displayUpdatableDependencies(result, options)
   }
 }
 

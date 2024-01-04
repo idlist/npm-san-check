@@ -12,6 +12,7 @@ const args = minimist(argv.slice(2))
 const options: CheckerOptions = {
   update: false,
   latest: false,
+  prerelease: false,
 }
 
 if (args._) {
@@ -23,12 +24,15 @@ if (args.u || args.update) {
 if (args.l || args.latest) {
   options.latest = true
 }
+if (args.pre || args.prerelease) {
+  options.prerelease = true
+}
 
 let pkgData
 try {
   pkgData = await readFile(`${cwd()}/package.json`, { encoding: 'utf8' })
 } catch {
-  console.error(`${c.red('Error:')} There isn\'t a ${c.green('package.json')} file under this directory.`)
+  console.log(`${c.red('Error:')} There isn\'t a ${c.green('package.json')} file under this directory.`)
   exit(1)
 }
 
@@ -36,7 +40,7 @@ let pkg
 try {
   pkg = JSON.parse(pkgData)
 } catch {
-  console.error(`${c.red('Error:')} Failed to parse ${c.green('package.json')}.`)
+  console.log(`${c.red('Error:')} Failed to parse ${c.green('package.json')}.`)
   exit(1)
 }
 

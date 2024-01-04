@@ -2,7 +2,7 @@ export const Wildcards = ['*', 'x', 'X'] as const
 
 export type WildcardChar = typeof Wildcards[number]
 
-export const isWildcard = (part: number | string): part is number => {
+export const isWildcard = (part: number | string) => {
   return Wildcards.includes(part as WildcardChar)
 }
 

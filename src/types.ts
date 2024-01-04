@@ -2,6 +2,7 @@ export interface CheckerOptions {
   filters?: string[]
   update: boolean
   latest: boolean
+  prerelease: boolean
 }
 
 export const DependencyTypes = ['dep', 'dev', 'peer', 'optional'] as const
