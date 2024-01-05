@@ -5,7 +5,7 @@ import c from 'kleur'
 import print from '@/print.js'
 import { parseRange } from '@/semver/range.js'
 import { formatRangeBase, updateRangeBase } from '@/semver/range-base.js'
-import replaceDependency from './replace-dep.js'
+import replaceDependencies from './replace-deps.js'
 import type { CheckerOptions, CheckErrors, DependencyChecked, DependencyUpdated } from '@/types.js'
 
 export interface CharsCount {
@@ -152,7 +152,7 @@ const updateDependencies = async (
     }
 
     if (backedUp) {
-      pkgData = replaceDependency(pkgData, updated, options)
+      pkgData = replaceDependencies(pkgData, updated, options)
 
       try {
         await writeFile(`${cwd()}/package.json`, pkgData, { encoding: 'utf8' })

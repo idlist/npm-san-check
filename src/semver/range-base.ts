@@ -141,14 +141,14 @@ export const formatRangeBase = (
   const patch = useColor(base.patch, color.patch)
   const preA = color.prereleaseA ?? none
   const preB = color.prereleaseB ?? none
-  const preSegmentA = base.prerelease.slice(0, v.index)
-  const preSegmentB = base.prerelease.slice(v.index)
+  const prePartA = base.prerelease.slice(0, v.index)
+  const prePartB = base.prerelease.slice(v.index)
 
   return major(`${base.major}`)
     + is(base.includeMinor, major('.') + minor(`${base.minor}`))
     + is(base.includePatch, minor('.') + patch(`${base.patch}`))
-    + is(base.includePrerelease, patch('-') + preA(preSegmentA.join('.')))
-    + is(base.includePrerelease, is(preSegmentA.length, preA('.')) + preB(preSegmentB.join('.')))
+    + is(base.includePrerelease, patch('-') + preA(prePartA.join('.')))
+    + is(base.includePrerelease, is(prePartA.length, preA('.')) + preB(prePartB.join('.')))
     + is(v.build, `+${base.build.join('.')}`)
 }
 
