@@ -3,9 +3,15 @@ export interface CheckerOptions {
   update: boolean
   latest: boolean
   prerelease: boolean
+  registry: string
 }
 
-export const DependencyTypes = ['dep', 'dev', 'peer', 'optional'] as const
+export const DependencyTypes = [
+  'dependencies',
+  'devDependencies',
+  'peerDependencies',
+  'optionalDependencies',
+] as const
 
 export type DependencyType = typeof DependencyTypes[number]
 

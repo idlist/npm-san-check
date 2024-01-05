@@ -18,13 +18,13 @@ npm-sc [...filters] [-u | --update] [-l | --latest] [--pre | --prerelease]
 
 ### "Newer"
 
-- Unary ranges with "larger than" semantics (`^`, `~`, `>`, `>=`) are updated to the newest versions that satisfies them, with the *range symbol* kept.
+- Unary ranges having "larger than" semantics (`^`, `~`, `>`, `>=`) are updated to the newest versions that satisfies them, with the *range symbol* kept.
 - Wildcards (`*`, `x`, `X`) are preserved.
-- Other ranges, as well as hyphen ranges (`-`) and compounded ranges (`||`), are ignored.
+- Other ranges, as well as hyphen ranges (`-`) and compound ranges (`||`), are ignored.
 
 ### "Latest"
 
 - Unary ranges (`^`, `~`, `<`, `<=`, `>`, `>=`, `=` or omitted) are updated to the latest versions with the *range symbols* kept.
 - For hyphen ranges (`-`), the right side is updated to the newest version.
-- Compounded ranges (connected by `||`) are ignored.
 - Wildcards (`*`, `x`, `X`) are preserved.
+- Compound ranges (connected by `||`) are ignored.

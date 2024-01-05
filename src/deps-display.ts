@@ -5,13 +5,13 @@ import type { CheckerOptions, DependencyType } from '@/types.js'
 
 const colorType = (type: DependencyType) => {
   switch (type) {
-    case 'dep':
+    case 'dependencies':
       return ' '
-    case 'dev':
+    case 'devDependencies':
       return c.yellow('d')
-    case 'peer':
+    case 'peerDependencies':
       return c.magenta('p')
-    case 'optional':
+    case 'optionalDependencies':
       return c.cyan('o')
   }
 }
@@ -56,7 +56,7 @@ const displayUpdatableDependencies = (
     }
   })
 
-  const showType = updated.filter((item) => item.type != 'dep').length
+  const showType = updated.filter((item) => item.type != 'dependencies').length
 
   print(
     `\n ${c.cyan('n')}ame${' '.repeat(chars.name - 4)}  `

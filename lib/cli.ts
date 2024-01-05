@@ -14,6 +14,7 @@ const options: CheckerOptions = {
   update: false,
   latest: false,
   prerelease: false,
+  registry: 'https://registry.npmjs.org/',
 }
 
 if (args._) {
@@ -28,12 +29,16 @@ if (args.l || args.latest) {
 if (args.pre || args.prerelease) {
   options.prerelease = true
 }
+if (args.r || args.registry) {
+  options.registry = args.r
+  options.registry = args.registry
+}
 
 let pkgData
 try {
   pkgData = await readFile(`${cwd()}/package.json`, { encoding: 'utf8' })
 } catch {
-  print(`${c.red('Error:')} There isn\'t a ${c.green('package.json')} file under this directory.`)
+  print.error(`there isn\'t a ${c.green('package.json')} file under this directory.`)
   exit(1)
 }
 
@@ -41,7 +46,7 @@ let pkg
 try {
   pkg = JSON.parse(pkgData)
 } catch {
-  print(`${c.red('Error:')} Failed to parse ${c.green('package.json')}.`)
+  print.error(`failed to parse ${c.green('package.json')}.`)
   exit(1)
 }
 

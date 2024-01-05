@@ -133,6 +133,8 @@ const updateDependencies = async (
     }
   }
 
+  pkgData = replaceDependencies(pkgData, updated, options)
+
   if (updated.length && options.update) {
     print('')
 
@@ -145,21 +147,19 @@ const updateDependencies = async (
     } catch {
       options.update = false
 
-      print(
-        `${c.red('Error:')} failed to generate ${c.green('package.sc.json')}. `
+      print.error(
+        `failed to generate ${c.green('package.sc.json')}. `
         + `The updates are not written to the ${c.green('package.json')} in case version control is not used.`,
       )
     }
 
     if (backedUp) {
-      pkgData = replaceDependencies(pkgData, updated, options)
-
       try {
         await writeFile(`${cwd()}/package.json`, pkgData, { encoding: 'utf8' })
 
         print(`Updates are written to ${c.green('package.json')}`)
       } catch {
-        print(`${c.red('Error:')} failed to write to ${c.green('package.json')}.`)
+        print.error(`failed to write to ${c.green('package.json')}.`)
       }
     }
   }

@@ -54,7 +54,7 @@ const checkDependencies = async (
 
     try {
       json = await limiter.schedule(async () => {
-        const res = await fetch(`https://registry.npmjs.org/${dep.name}`)
+        const res = await fetch(`${options.registry}${dep.name}`)
         return res.json()
       }) as NpmPackagePartial
     } catch {
