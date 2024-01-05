@@ -1,6 +1,7 @@
 import c from 'kleur'
-import type { DependencyUpdateResult } from './deps-update.js'
-import type { CheckerOptions, DependencyType } from './types.js'
+import print from '@/print.js'
+import type { DependencyUpdateResult } from '@/deps-update.js'
+import type { CheckerOptions, DependencyType } from '@/types.js'
 
 const colorType = (type: DependencyType) => {
   switch (type) {
@@ -19,15 +20,15 @@ const displayUpdatableDependencies = (
   result: DependencyUpdateResult,
   options: CheckerOptions,
 ) => {
-  const { toUpdate, chars, errors } = result
+  const { updated, chars, errors } = result
 
   const errored = () => errors.semver.length || errors.network.length
 
   if (errored()) {
-    console.log('')
+    print('')
   }
   if (errors.semver.length) {
-    console.log(
+    print(
       `Package ${errors.semver.map((name) => c.red(name)).join(', ')} `
       + (errors.semver.length == 1
         ? 'has invalid semver range, and is skipped.'
@@ -35,16 +36,16 @@ const displayUpdatableDependencies = (
     )
   }
   if (errors.network.length) {
-    console.log(
-      `Package ${errors.semver.map((name) => c.red(name)).join(', ')} `
+    print(
+      `Package ${errors.network.map((name) => c.red(name)).join(', ')} `
       + (errors.network.length == 1 ? 'is' : 'are')
-      + ' not checked due to connection error to npm\'s API.',
+      + ' not checked due to connection error to npm\'s registry.',
     )
   }
 
-  if (!toUpdate.length) {
+  if (!updated.length) {
     if (!errored()) {
-      console.log(`\nAll dependencies are up to date! ${c.green(':3')}`)
+      print(`\nAll dependencies are up to date! ${c.green(':3')}`)
     }
     return
   }
@@ -55,9 +56,9 @@ const displayUpdatableDependencies = (
     }
   })
 
-  const showType = toUpdate.filter((item) => item.type != 'dep').length
+  const showType = updated.filter((item) => item.type != 'dep').length
 
-  console.log(
+  print(
     `\n ${c.cyan('n')}ame${' '.repeat(chars.name - 4)}  `
     + (showType ? '   ' : '')
     + ' '.repeat(chars.current + 5)
@@ -65,14 +66,14 @@ const displayUpdatableDependencies = (
     + (chars.latest ? `${' '.repeat(chars.latest - 6)}${c.magenta('l')}atest` : ''),
   )
 
-  for (const dep of toUpdate) {
-    console.log(
+  for (const dep of updated) {
+    print(
       ` ${dep.name}${' '.repeat(chars.name - dep.name.length)}  `
       + (showType ? `${colorType(dep.type)}  ` : '')
       + `${' '.repeat(chars.current - dep.current.length)}${dep.current}  →  `
       + (chars.newer && dep.newer
         ? `${' '.repeat(chars.newer - dep.newer.length)}${dep.newerColored}  `
-        : '')
+        : (chars.newer && dep.latest ? ' '.repeat(chars.newer + 2)  : ''))
       + (chars.latest && dep.latest ?
         `${' '.repeat(chars.latest - dep.latest.length)}${dep.latestColored}`
         : ''),
@@ -80,22 +81,21 @@ const displayUpdatableDependencies = (
   }
 
   if (options.update) {
-    console.log('')
-    console.log(
+    print(
       `\nUse ${c.cyan('npm install')} to install the `
       + (options.latest ? `${c.magenta('l')}atest` : `${c.green('n')}ewer`)
       + ' versions.',
     )
   } else {
-    console.log('')
+    print('')
     if (chars.newer) {
-      console.log(
-        `\nRun ${c.cyan('npm-sc -u')} to update ${c.green('package.json')} `
+      print(
+        `Run ${c.cyan('npm-sc -u')} to update ${c.green('package.json')} `
         + `to ${c.green('n')}ewer versions.`,
       )
     }
     if (chars.latest) {
-      console.log(
+      print(
         `Run ${c.cyan('npm-sc -u')}${c.magenta('l')} to update ${c.green('package.json')} `
         + `to ${c.magenta('l')}atest versions.`,
       )

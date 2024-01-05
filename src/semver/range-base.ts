@@ -1,6 +1,7 @@
 import c, { Color } from 'kleur'
-import { SemverParts, type Prerelease, type Semver, type SemverPart } from './semver.js'
+import { SemverParts, type Prerelease, type Semver, type SemverPart, takeSemverFrom } from './semver.js'
 import { isWildcard, isWildcardOrNumber, parseIntOrWildcard, type WildcardChar } from './wildcard.js'
+import { SemVer } from 'semver'
 
 export interface RangeBase {
   major: number | WildcardChar
@@ -39,14 +40,14 @@ export const parseRangeBase = (raw: string) => {
   if (prereleaseRaw) {
     prerelease = prereleaseRaw
       .split('.')
-      .filter((s) => /^[0-9A-Za-z]+$/.test(s))
+      .filter((s) => /^[0-9A-Za-z-]+$/.test(s))
       .map((s) => /^\d+$/.test(s) ? parseInt(s) : s)
     includePrerelease = true
   }
 
   let build: string[] = []
   if (buildRaw) {
-    build = buildRaw.split('.').filter((s) => /^[0-9A-Za-z]+$/.test(s))
+    build = buildRaw.split('.').filter((s) => /^[0-9A-Za-z-]+$/.test(s))
   }
 
   return {
@@ -76,12 +77,10 @@ export const comparePrerelease = (a: Prerelease, b: Prerelease): ComparedPrerele
   const length = a.length < b.length ? a.length : b.length
 
   for (let i = 0; i < length; i++) {
-    if (typeof a[i] == typeof b[i]) {
-      if (a[i] != b[i]) {
-        return {
-          result: a[i] < b[i] ? -1 : 1,
-          index: i,
-        }
+    if (typeof a[i] == typeof b[i] && a[i] != b[i]) {
+      return {
+        result: a[i] < b[i] ? -1 : 1,
+        index: i,
       }
     } else if (typeof a[i] == 'number' && typeof b[i] == 'string') {
       return {
@@ -114,10 +113,10 @@ type ColoredPart = typeof ColoredParts[number]
 
 type RangeBaseColor = Partial<Record<ColoredPart, Color>>
 
-const none = c.white
+const none = (a: string) => a
 
 const useColor = (part: number | WildcardChar, color?: Color) => {
-  return isWildcard(part) && color ? color : none
+  return !isWildcard(part) && color ? color : none
 }
 
 interface FormatRangeOptions {
@@ -136,18 +135,20 @@ export const formatRangeBase = (
     ...options,
   }
 
-  const is = (cond: boolean, content: string) => cond ? content : ''
+  const is = (cond: unknown, content: string) => cond ? content : ''
   const major = useColor(base.major, color.major)
   const minor = useColor(base.minor, color.minor)
   const patch = useColor(base.patch, color.patch)
   const preA = color.prereleaseA ?? none
   const preB = color.prereleaseB ?? none
+  const preSegmentA = base.prerelease.slice(0, v.index)
+  const preSegmentB = base.prerelease.slice(v.index)
 
   return major(`${base.major}`)
     + is(base.includeMinor, major('.') + minor(`${base.minor}`))
     + is(base.includePatch, minor('.') + patch(`${base.patch}`))
-    + is(base.includePrerelease, patch('-') + preA(base.prerelease.slice(0, v.index).join('.')))
-    + is(base.includePrerelease, preA('.') + preB(base.prerelease.slice(v.index).join('.')))
+    + is(base.includePrerelease, patch('-') + preA(preSegmentA.join('.')))
+    + is(base.includePrerelease, is(preSegmentA.length, preA('.')) + preB(preSegmentB.join('.')))
     + is(v.build, `+${base.build.join('.')}`)
 }
 
@@ -176,6 +177,10 @@ export const overrideRangeBaseFrom = (from: RangeBase, to: Semver, part: SemverP
   for (let i = pos; i < SemverParts.length; i++) {
     const key = SemverParts[i]
     cloned[key] = clone(to[key]) as never
+
+    if (key == 'prerelease' && to.prerelease.length) {
+      cloned.includePrerelease = to.prerelease.length ? true : false
+    }
   }
 
   return cloned
@@ -187,141 +192,159 @@ interface UpdateRangeBaseOptions {
 
 interface UpdatedRangeBase {
   result: -1 | 0 | 1
-  updated: string
-  updatedColored: string
+  to: string
+  toColored: string
 }
 
 export const updateRangeBase = (
-  from: RangeBase,
-  to: Semver,
+  a: RangeBase,
+  b: Semver | SemVer,
   options: Partial<UpdateRangeBaseOptions>,
 ): UpdatedRangeBase => {
+  if (b instanceof SemVer) {
+    b = takeSemverFrom(b)
+  }
+
   const v: UpdateRangeBaseOptions = {
     prerelease: false,
     ...options,
   }
 
-  if (isWildcardOrNumber(from.major)) {
-    const updated = from.major
+  if (isWildcardOrNumber(a.major)) {
+    const to = a.major
 
     return {
       result: 0,
-      updated,
-      updatedColored: updated,
+      to,
+      toColored: to,
     }
-  } else if (from.major != to.major) {
-    const updated = overrideRangeBaseFrom(from, to, 'major')
+  } else if (a.major != b.major) {
+    const to = overrideRangeBaseFrom(a, b, 'major')
 
-    if (from.major < to.major) {
+    if (a.major > b.major) {
       return {
         result: -1,
-        updated: formatRangeBase(updated),
-        updatedColored: formatRangeBase(updated, useRangeColorByPart('major', c.bgRed().black)),
+        to: formatRangeBase(to),
+        toColored: formatRangeBase(to, useRangeColorByPart('major', c.bgRed().black)),
       }
     } else {
       return {
         result: 1,
-        updated: formatRangeBase(updated),
-        updatedColored: formatRangeBase(updated, useRangeColorByPart('major', c.red)),
+        to: formatRangeBase(to),
+        toColored: formatRangeBase(to, useRangeColorByPart('major', c.red)),
       }
     }
-  } else if (from.includeMinor) {
-    if (isWildcardOrNumber(from.minor)) {
-      const updated = `${from.major}.${from.minor}`
+  }
+
+  if (a.includeMinor) {
+    if (isWildcardOrNumber(a.minor)) {
+      const to = `${a.major}.${a.minor}`
 
       return {
         result: 0,
-        updated,
-        updatedColored: updated,
+        to,
+        toColored: to,
       }
-    } else if (from.minor != to.minor) {
-      const updated = overrideRangeBaseFrom(from, to, 'minor')
+    } else if (a.minor != b.minor) {
+      const to = overrideRangeBaseFrom(a, b, 'minor')
 
-      if (from.minor < to.minor) {
+      if (a.minor > b.minor) {
         return {
           result: -1,
-          updated: formatRangeBase(updated),
-          updatedColored: formatRangeBase(updated, useRangeColorByPart('minor', c.bgRed().black)),
+          to: formatRangeBase(to),
+          toColored: formatRangeBase(to, useRangeColorByPart('minor', c.bgRed().black)),
         }
       } else {
         let color: Color
 
-        if (from.major == 0) {
+        if (a.major == 0) {
           color = c.red
         } else {
-          color = c.blue
+          color = c.cyan
         }
 
         return {
           result: 1,
-          updated: formatRangeBase(updated),
-          updatedColored: formatRangeBase(updated, useRangeColorByPart('minor', color)),
-        }
-      }
-    }
-  } else if (from.includePatch) {
-    if (isWildcardOrNumber(from.patch)) {
-      const updated = `${from.major}.${from.minor}.${from.patch}`
-
-      return {
-        result: 0,
-        updated,
-        updatedColored: updated,
-      }
-    } else if (from.patch != to.patch) {
-      const updated = overrideRangeBaseFrom(from, to, 'minor')
-
-      if (from.patch < to.patch) {
-        return {
-          result: -1,
-          updated: formatRangeBase(updated),
-          updatedColored: formatRangeBase(updated, useRangeColorByPart('patch', c.bgRed().black)),
-        }
-      } else {
-        let color: Color
-
-        if (from.minor == 0) {
-          color = c.red
-        } else if (from.major == 0) {
-          color = c.blue
-        } else {
-          color = c.green
-        }
-
-        return {
-          result: 0,
-          updated: formatRangeBase(updated),
-          updatedColored: formatRangeBase(updated, useRangeColorByPart('patch', color)),
-        }
-      }
-    }
-  } else if (v.prerelease && from.includePrerelease) {
-    const compared = comparePrerelease(from.prerelease, to.prerelease)
-
-    if (compared.result != 0) {
-      const updated = overrideRangeBaseFrom(from, to, 'prerelease')
-
-      if (compared.result < 0) {
-        return {
-          result: -1,
-          updated: formatRangeBase(updated),
-          updatedColored: formatRangeBase(updated, useRangeColorByPart('prereleaseB', c.bgRed().black)),
-        }
-      } else {
-        return {
-          result: 1,
-          updated: formatRangeBase(updated),
-          updatedColored: formatRangeBase(updated, useRangeColorByPart('prereleaseB', c.yellow)),
+          to: formatRangeBase(to),
+          toColored: formatRangeBase(to, useRangeColorByPart('minor', color)),
         }
       }
     }
   }
 
-  const updated = formatRangeBase(clone(from))
+  if (a.includePatch) {
+    if (isWildcardOrNumber(a.patch)) {
+      const to = `${a.major}.${a.minor}.${a.patch}`
+
+      return {
+        result: 0,
+        to,
+        toColored: to,
+      }
+    } else if (a.patch != b.patch) {
+      const to = overrideRangeBaseFrom(a, b, 'patch')
+
+      if (a.patch > b.patch) {
+        return {
+          result: -1,
+          to: formatRangeBase(to),
+          toColored: formatRangeBase(to, useRangeColorByPart('patch', c.bgRed().black)),
+        }
+      } else {
+        let color: Color
+
+        if (a.minor == 0) {
+          color = c.red
+        } else if (a.major == 0) {
+          color = c.cyan
+        } else {
+          color = c.green
+        }
+
+        return {
+          result: 1,
+          to: formatRangeBase(to),
+          toColored: formatRangeBase(to, useRangeColorByPart('patch', color)),
+        }
+      }
+    }
+  }
+
+  if (v.prerelease && a.includePrerelease) {
+    const compared = comparePrerelease(a.prerelease, b.prerelease)
+
+    if (compared.result != 0) {
+      const to = overrideRangeBaseFrom(a, b, 'prerelease')
+
+      if (compared.result > 0) {
+        return {
+          result: -1,
+          to: formatRangeBase(to),
+          toColored: formatRangeBase(
+            to,
+            useRangeColorByPart('prereleaseB', c.bgRed().black),
+            { index: compared.index },
+          ),
+        }
+      } else {
+        return {
+          result: 1,
+          to: formatRangeBase(to),
+          toColored: formatRangeBase(
+            to,
+            useRangeColorByPart('prereleaseB', c.yellow),
+            { index: compared.index },
+          ),
+        }
+      }
+    }
+  }
+
+  const to = formatRangeBase(clone(a))
 
   return {
     result: 0,
-    updated,
-    updatedColored: updated,
+    to,
+    toColored: to,
   }
 }

@@ -22,12 +22,11 @@ export interface Dependency {
   latest?: string
 }
 
-export type DependencyChecked =
-  | { status: 'ok' } & Required<Dependency>
-  | { status: CheckStatusError } & Dependency
+export type DependencyChecked = Dependency
 
-export interface DependencyToUpdate extends Omit<Dependency, 'status'> {
+export interface DependencyUpdated extends Omit<Dependency, 'status'> {
   newerColored?: string
+  isLatestDuplicate?: boolean
   latestColored?: string
 }
 

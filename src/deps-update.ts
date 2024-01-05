@@ -2,10 +2,10 @@ import { writeFile } from 'fs/promises'
 import { cwd } from 'process'
 import semver from 'semver'
 import c from 'kleur'
-import { parseRange } from './semver/range.js'
-import { takeSemverFrom } from './semver/semver.js'
-import { updateRangeBase } from './semver/range-base.js'
-import type { CheckerOptions, CheckErrors, DependencyChecked, DependencyToUpdate } from './types.js'
+import print from '@/print.js'
+import { parseRange } from '@/semver/range.js'
+import { formatRangeBase, updateRangeBase } from '@/semver/range-base.js'
+import type { CheckerOptions, CheckErrors, DependencyChecked, DependencyUpdated } from '@/types.js'
 
 export interface CharsCount {
   name: number
@@ -15,7 +15,7 @@ export interface CharsCount {
 }
 
 export interface DependencyUpdateResult {
-  toUpdate: DependencyToUpdate[]
+  updated: DependencyUpdated[]
   chars: CharsCount
   errors: CheckErrors
 }
@@ -27,7 +27,7 @@ const updateDependencies = async (
 ): Promise<DependencyUpdateResult | undefined> => {
   const pkgDataBackup = pkgData
 
-  const toUpdate: DependencyToUpdate[] = []
+  const updated: DependencyUpdated[] = []
 
   const chars: CharsCount = {
     name: 0,
@@ -54,7 +54,7 @@ const updateDependencies = async (
       continue
     }
 
-    const line: DependencyToUpdate = {
+    const entry: DependencyUpdated = {
       name: dep.name,
       type: dep.type,
       current: dep.current,
@@ -67,35 +67,88 @@ const updateDependencies = async (
     }
 
     if (range.type == '-') {
-      const latest = takeSemverFrom(semver.parse(dep.latest)!)
-    } else {
+      if (dep.latest) {
+        const latest = semver.parse(dep.latest)!
 
+        if (semver.gtr(latest, dep.current)) {
+          const rangeRight = updateRangeBase(range.operand[1], latest, options)
+
+          if (rangeRight.result != 0) {
+            const rangeLeft = formatRangeBase(range.operand[0])
+            entry.latest = `${rangeLeft} - ${rangeRight.to}`
+            entry.latestColored = `${rangeLeft} - ${rangeRight.toColored}`
+          }
+        }
+
+        if (options.update && options.latest) {
+          // TODO: write file
+        }
+      }
+    } else {
+      if (['^', '~', '>', '>='].includes(range.type) && dep.newer) {
+        const newer = semver.parse(dep.newer)!
+
+        if (semver.gtr(newer, formatRangeBase(range.operand))) {
+          const newerUpdated = updateRangeBase(range.operand, newer, options)
+
+          if (newerUpdated.result != 0) {
+            entry.newer = `${range.type}${newerUpdated.to}`
+            entry.newerColored = `${range.type}${newerUpdated.toColored}`
+          }
+        }
+
+        if (options.update && !options.latest) {
+          // TODO: write file
+        }
+      }
+
+      if (dep.latest) {
+        const latest = semver.parse(dep.latest)!
+
+        if (semver.gtr(latest, formatRangeBase(range.operand))) {
+          const latestUpdated = updateRangeBase(range.operand, latest, options)
+
+          if (latestUpdated.result != 0) {
+            entry.latest = `${range.type}${latestUpdated.to}`
+            entry.latestColored = `${range.type}${latestUpdated.toColored}`
+
+            if (entry.latest == entry.newer) {
+              entry.latest = '..'
+              entry.latestColored = '..'
+            }
+          }
+        }
+
+        if (options.update && options.latest) {
+          // TODO: write file
+        }
+      }
     }
 
-    if (line.newer || line.latest) {
+    if (entry.newer || entry.latest) {
       (['name', 'current', 'newer', 'latest'] as const).map((key) => {
-        if (line[key] && line[key]!.length > chars[key]) {
-          chars[key] = line[key]!.length
+        if (entry[key] && entry[key]!.length > chars[key]) {
+          chars[key] = entry[key]!.length
         }
       })
 
-      toUpdate.push(line)
+      updated.push(entry)
     }
   }
 
-  if (toUpdate.length && options.update) {
-    console.log('')
+  if (updated.length && options.update) {
+    print('')
 
     let backedUp = false
     try {
       await writeFile(`${cwd()}/package.sc.json`, pkgDataBackup)
       backedUp = true
 
-      console.log(`A backup ${c.green('package.sc.json')} is created in case version control is not used.`)
+      print(`A backup ${c.green('package.sc.json')} is created in case version control is not used.`)
     } catch {
       options.update = false
 
-      console.log(
+      print(
         `${c.red('Error:')} failed to generate ${c.green('package.sc.json')}. `
         + `The updates are not written to the ${c.green('package.json')} in case version control is not used.`,
       )
@@ -105,14 +158,18 @@ const updateDependencies = async (
       try {
         await writeFile(`${cwd()}/package.json`, pkgData)
 
-        console.log(`Updates are written to ${c.green('package.json')}`)
+        print(`Updates are written to ${c.green('package.json')}`)
       } catch {
-        console.log(`${c.red('Error:')} failed to write to ${c.green('package.json')}.`)
+        print(`${c.red('Error:')} failed to write to ${c.green('package.json')}.`)
       }
     }
   }
 
-  return { toUpdate, chars, errors }
+  return {
+    updated,
+    chars,
+    errors,
+  }
 }
 
 export default updateDependencies

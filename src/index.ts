@@ -1,11 +1,12 @@
 import type { PackageJson } from 'type-fest'
-import checkDependencies from './deps-check.js'
-import updateDependencies from './deps-update.js'
-import displayUpdatableDependencies from './deps-display.js'
-import { DependencyTypes } from './types.js'
-import type { CheckerOptions, DependencyType, Dependency } from './types.js'
+import print from '@/print.js'
+import checkDependencies from '@/deps-check.js'
+import updateDependencies from '@/deps-update.js'
+import displayUpdatableDependencies from '@/deps-display.js'
+import { DependencyTypes } from '@/types.js'
+import type { CheckerOptions, DependencyType, Dependency } from '@/types.js'
 
-const collectDeps = (
+const collectDependencies = (
   record: Record<string, string>,
   type: DependencyType,
   filters: string[] = [],
@@ -37,11 +38,11 @@ const check = async (pkgData: string, pkg: PackageJson, options: CheckerOptions)
   const deps: Dependency[] = DependencyTypes.flatMap((type) => {
     const key = type == 'dep' ? 'dependencies' : (type + 'Dependencies')
     const deps = pkg[key] as Record<string, string>
-    return pkg[key] ? collectDeps(deps, type, options.filters) : []
+    return pkg[key] ? collectDependencies(deps, type, options.filters) : []
   })
 
   if (!deps.length) {
-    console.log('No dependencies.')
+    print('No dependencies.')
     return
   }
 

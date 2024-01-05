@@ -65,10 +65,26 @@ const checkDependencies = async (
 
     updateCheck(dep.name)
 
-    const latest = json['dist-tags'].latest
-    dep.latest = latest
-
     const versions = semver.sort(Object.keys(json.versions).map((s) => semver.parse(s)!))
+
+    if (options.latest) {
+      let latest
+
+      if (options.prerelease) {
+        for (let i = versions.length - 1; i >= 0; i--) {
+          if (json.versions[versions[i].version].deprecated) {
+            continue
+          }
+
+          latest = versions[i].version
+          break
+        }
+      } else {
+        latest = json['dist-tags'].latest
+      }
+
+      dep.latest = latest
+    }
 
     for (let i = versions.length - 1; i >= 0; i--) {
       const version = versions[i]
@@ -77,19 +93,21 @@ const checkDependencies = async (
       if (json.versions[value].deprecated) {
         continue
       }
-      if (!options.prerelease && !version.prerelease.length) {
+      if (!options.prerelease && version.prerelease.length) {
         continue
       }
-      if (!semver.satisfies(version, dep.current)) {
+
+      const satisfies = semver.satisfies(version, dep.current, {
+        loose: true,
+        includePrerelease: options.prerelease,
+      })
+
+      if (!satisfies) {
         continue
       }
 
       dep.newer = value
       break
-    }
-
-    if (!dep.newer) {
-      dep.newer = versions[versions.length - 1].version
     }
   }))
 

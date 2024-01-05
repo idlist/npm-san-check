@@ -5,6 +5,7 @@ import { readFile } from 'node:fs/promises'
 import minimist from 'minimist'
 import c from 'kleur'
 import check from '@/index.js'
+import print from '@/print.js'
 import type { CheckerOptions } from '@/types.js'
 
 const args = minimist(argv.slice(2))
@@ -32,7 +33,7 @@ let pkgData
 try {
   pkgData = await readFile(`${cwd()}/package.json`, { encoding: 'utf8' })
 } catch {
-  console.log(`${c.red('Error:')} There isn\'t a ${c.green('package.json')} file under this directory.`)
+  print(`${c.red('Error:')} There isn\'t a ${c.green('package.json')} file under this directory.`)
   exit(1)
 }
 
@@ -40,7 +41,7 @@ let pkg
 try {
   pkg = JSON.parse(pkgData)
 } catch {
-  console.log(`${c.red('Error:')} Failed to parse ${c.green('package.json')}.`)
+  print(`${c.red('Error:')} Failed to parse ${c.green('package.json')}.`)
   exit(1)
 }
 

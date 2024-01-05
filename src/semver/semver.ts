@@ -1,4 +1,4 @@
-import { SemVer } from 'semver'
+import { type SemVer } from 'semver'
 
 export const SemverParts = ['major', 'minor', 'patch', 'prerelease', 'build'] as const
 
