@@ -65,7 +65,7 @@ const updateDependencies = async (
 
     const range = parseRange(dep.current)
 
-    if (!range) {
+    if (!range || range.type == '||') {
       continue
     }
 
@@ -74,7 +74,7 @@ const updateDependencies = async (
         const latest = semver.parse(dep.latest)!
 
         if (semver.gtr(latest, dep.current)) {
-          const rangeRight = updateRangeBase(range.operand[1], latest, options)
+          const rangeRight = updateRangeBase(range.operand[1], latest)
 
           if (rangeRight.result != 0) {
             const rangeLeft = formatRangeBase(range.operand[0])
@@ -84,33 +84,27 @@ const updateDependencies = async (
         }
       }
     } else {
-      if (['^', '~', '>', '>='].includes(range.type) && dep.newer) {
+      if (dep.newer && ['^', '~', '>', '>='].includes(range.type)) {
         const newer = semver.parse(dep.newer)!
+        const newerUpdated = updateRangeBase(range.operand, newer)
 
-        if (semver.gtr(newer, formatRangeBase(range.operand))) {
-          const newerUpdated = updateRangeBase(range.operand, newer, options)
-
-          if (newerUpdated.result != 0) {
-            entry.newer = `${range.type}${newerUpdated.to}`
-            entry.newerColored = `${range.type}${newerUpdated.toColored}`
-          }
+        if (newerUpdated.result != 0) {
+          entry.newer = `${range.type}${newerUpdated.to}`
+          entry.newerColored = `${range.type}${newerUpdated.toColored}`
         }
       }
 
       if (dep.latest) {
         const latest = semver.parse(dep.latest)!
+        const latestUpdated = updateRangeBase(range.operand, latest)
 
-        if (semver.gtr(latest, formatRangeBase(range.operand))) {
-          const latestUpdated = updateRangeBase(range.operand, latest, options)
+        if (latestUpdated.result != 0) {
+          entry.latest = `${range.type}${latestUpdated.to}`
+          entry.latestColored = `${range.type}${latestUpdated.toColored}`
 
-          if (latestUpdated.result != 0) {
-            entry.latest = `${range.type}${latestUpdated.to}`
-            entry.latestColored = `${range.type}${latestUpdated.toColored}`
-
-            if (entry.latest == entry.newer) {
-              entry.newer = duplicate
-              entry.newerColored = duplicate
-            }
+          if (entry.latest == entry.newer) {
+            entry.newer = duplicate
+            entry.newerColored = duplicate
           }
         }
       }

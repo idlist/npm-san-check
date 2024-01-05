@@ -3,6 +3,8 @@ import semver from 'semver'
 import c from 'kleur'
 import { SingleBar } from 'cli-progress'
 import type { CheckerOptions, Dependency, DependencyChecked } from './types.js'
+import { parseRange } from './semver/range.js'
+import { RangeBase, formatRangeBase } from './semver/range-base.js'
 
 interface NpmPackagePartial {
   'dist-tags': {
@@ -36,7 +38,7 @@ const checkDependencies = async (
 
   bar.start(deps.length, 0, { rest: '' })
 
-  const updateCheck = (name: string) => {
+  const updateChecking = (name: string) => {
     bar.increment({ rest: `→ ${c.cyan(name)}` })
   }
 
@@ -46,7 +48,12 @@ const checkDependencies = async (
 
     if (!semver.validRange(dep.current, { loose: true })) {
       dep.status = 'semver'
-      updateCheck(dep.name)
+      updateChecking(dep.name)
+      return
+    }
+
+    const range = parseRange(dep.current)
+    if (range?.type == '||') {
       return
     }
 
@@ -59,55 +66,48 @@ const checkDependencies = async (
       }) as NpmPackagePartial
     } catch {
       dep.status = 'network'
-      updateCheck(dep.name)
+      updateChecking(dep.name)
       return
     }
 
-    updateCheck(dep.name)
+    updateChecking(dep.name)
 
-    const versions = semver.sort(Object.keys(json.versions).map((s) => semver.parse(s)!))
+    let versions = Object.keys(json.versions)
+      .filter((v) => !json.versions[v].deprecated)
+      .map((s) => semver.parse(s)!)
+
+    const includePrerelease = options.prerelease
+      || (range?.type != '-' && range?.operand.includePrerelease)
+      || (range?.type == '-' && (range.operand[0].includePrerelease || range.operand[1].includePrerelease))
+
+    if (!includePrerelease) {
+      versions = versions.filter((v) => !v.prerelease.length)
+    }
+
+    versions = semver.sort(versions)
+
+    let latest
+
+    if (options.prerelease) {
+      latest = versions[versions.length - 1].version
+    } else {
+      latest = json['dist-tags'].latest
+    }
 
     if (options.latest) {
-      let latest
-
-      if (options.prerelease) {
-        for (let i = versions.length - 1; i >= 0; i--) {
-          if (json.versions[versions[i].version].deprecated) {
-            continue
-          }
-
-          latest = versions[i].version
-          break
-        }
-      } else {
-        latest = json['dist-tags'].latest
-      }
-
       dep.latest = latest
     }
 
-    for (let i = versions.length - 1; i >= 0; i--) {
-      const version = versions[i]
-      const value = version.version
+    if (range && ['^', '~', '>', '>='].includes(range.type)) {
+      console.log(versions)
+      let newer = semver.maxSatisfying(versions, dep.current, { loose: true, includePrerelease })?.version
+      console.log(newer)
 
-      if (json.versions[value].deprecated) {
-        continue
-      }
-      if (!options.prerelease && version.prerelease.length) {
-        continue
+      if (!newer && semver.ltr(latest, formatRangeBase(range.operand as RangeBase))) {
+        newer = latest
       }
 
-      const satisfies = semver.satisfies(version, dep.current, {
-        loose: true,
-        includePrerelease: options.prerelease,
-      })
-
-      if (!satisfies) {
-        continue
-      }
-
-      dep.newer = value
-      break
+      dep.newer = newer
     }
   }))
 

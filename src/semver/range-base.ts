@@ -189,10 +189,6 @@ export const overrideRangeBaseFrom = (from: RangeBase, to: Semver, part: SemverP
   return cloned
 }
 
-interface UpdateRangeBaseOptions {
-  prerelease: boolean
-}
-
 interface UpdatedRangeBase {
   result: -1 | 0 | 1
   to: string
@@ -202,15 +198,9 @@ interface UpdatedRangeBase {
 export const updateRangeBase = (
   a: RangeBase,
   b: Semver | SemVer,
-  options: Partial<UpdateRangeBaseOptions>,
 ): UpdatedRangeBase => {
   if (b instanceof SemVer) {
     b = takeSemverFrom(b)
-  }
-
-  const v: UpdateRangeBaseOptions = {
-    prerelease: false,
-    ...options,
   }
 
   if (isWildcardOrNumber(a.major)) {
@@ -313,7 +303,7 @@ export const updateRangeBase = (
     }
   }
 
-  if (v.prerelease && a.includePrerelease) {
+  if (a.includePrerelease) {
     const compared = comparePrerelease(a.prerelease, b.prerelease)
 
     if (compared.result != 0) {

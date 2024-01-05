@@ -1,5 +1,9 @@
 import { parseRangeBase, type RangeBase } from './range-base.js'
 
+interface RangeCompound {
+  type: '||'
+}
+
 type RangeUnaryOp = '^' | '~' | '>' | '>=' | '<' | '<=' | '=' | ''
 
 interface RangeUnary {
@@ -14,7 +18,7 @@ interface RangeHyphen {
   operand: [RangeBase, RangeBase]
 }
 
-type Range = RangeUnary | RangeHyphen
+type Range = RangeUnary | RangeHyphen | RangeCompound
 
 export const parseRange = (raw: string): Range | undefined => {
   const segments = raw.split('||')
@@ -22,7 +26,9 @@ export const parseRange = (raw: string): Range | undefined => {
   // Skip parsing range if the range is a composed range.
   // Let user handle the specific case by themselves.
   if (segments.length >= 2) {
-    return
+    return {
+      type: '||',
+    }
   }
 
   const segment = segments[0]
