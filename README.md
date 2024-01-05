@@ -20,7 +20,7 @@ npm-sc [...filters] [-u | --update] [-l | --latest] [--pre | --prerelease]
 
 - Unary ranges with "larger than" semantics (`^`, `~`, `>`, `>=`) are updated to the newest versions that satisfies them, with the *range symbol* kept.
 - Wildcards (`*`, `x`, `X`) are preserved.
-- Other ranges, as well as compounded ranges `||` and hyphen ranges `-`, are ignored.
+- Other ranges, as well as hyphen ranges (`-`) and compounded ranges (`||`), are ignored.
 
 ### "Latest"
 

@@ -176,7 +176,10 @@ export const overrideRangeBaseFrom = (from: RangeBase, to: Semver, part: SemverP
 
   for (let i = pos; i < SemverParts.length; i++) {
     const key = SemverParts[i]
-    cloned[key] = clone(to[key]) as never
+
+    if (typeof cloned[key] != 'string') {
+      cloned[key] = clone(to[key]) as never
+    }
 
     if (key == 'prerelease' && to.prerelease.length) {
       cloned.includePrerelease = to.prerelease.length ? true : false

@@ -26,7 +26,6 @@ export type DependencyChecked = Dependency
 
 export interface DependencyUpdated extends Omit<Dependency, 'status'> {
   newerColored?: string
-  isLatestDuplicate?: boolean
   latestColored?: string
 }
 

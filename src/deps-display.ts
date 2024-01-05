@@ -75,7 +75,7 @@ const displayUpdatableDependencies = (
         ? `${' '.repeat(chars.newer - dep.newer.length)}${dep.newerColored}  `
         : (chars.newer && dep.latest ? ' '.repeat(chars.newer + 2)  : ''))
       + (chars.latest && dep.latest ?
-        `${' '.repeat(chars.latest - dep.latest.length)}${dep.latestColored}`
+        `${' '.repeat(chars.latest - dep.latest.length!)}${dep.latestColored}`
         : ''),
     )
   }
@@ -90,13 +90,17 @@ const displayUpdatableDependencies = (
     print('')
     if (chars.newer) {
       print(
-        `Run ${c.cyan('npm-sc -u')} to update ${c.green('package.json')} `
+        `Run ${c.cyan('npm-sc -u')}`
+        + (options.prerelease ? ` ${c.yellow('--pre')}` : '')
+        + ` to update ${c.green('package.json')} `
         + `to ${c.green('n')}ewer versions.`,
       )
     }
     if (chars.latest) {
       print(
-        `Run ${c.cyan('npm-sc -u')}${c.magenta('l')} to update ${c.green('package.json')} `
+        `Run ${c.cyan('npm-sc -u')}${c.magenta('l')}`
+        + (options.prerelease ? ` ${c.yellow('--pre')}` : '')
+        + ` to update ${c.green('package.json')} `
         + `to ${c.magenta('l')}atest versions.`,
       )
     }

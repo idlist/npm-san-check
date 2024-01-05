@@ -5,6 +5,7 @@ import c from 'kleur'
 import print from '@/print.js'
 import { parseRange } from '@/semver/range.js'
 import { formatRangeBase, updateRangeBase } from '@/semver/range-base.js'
+import replaceDependency from './replace-dep.js'
 import type { CheckerOptions, CheckErrors, DependencyChecked, DependencyUpdated } from '@/types.js'
 
 export interface CharsCount {
@@ -40,6 +41,8 @@ const updateDependencies = async (
     semver: [],
     network: [],
   }
+
+  const duplicate = '..'
 
   for (const dep of deps) {
     if (dep.status == 'semver') {
@@ -79,10 +82,6 @@ const updateDependencies = async (
             entry.latestColored = `${rangeLeft} - ${rangeRight.toColored}`
           }
         }
-
-        if (options.update && options.latest) {
-          // TODO: write file
-        }
       }
     } else {
       if (['^', '~', '>', '>='].includes(range.type) && dep.newer) {
@@ -95,10 +94,6 @@ const updateDependencies = async (
             entry.newer = `${range.type}${newerUpdated.to}`
             entry.newerColored = `${range.type}${newerUpdated.toColored}`
           }
-        }
-
-        if (options.update && !options.latest) {
-          // TODO: write file
         }
       }
 
@@ -113,22 +108,24 @@ const updateDependencies = async (
             entry.latestColored = `${range.type}${latestUpdated.toColored}`
 
             if (entry.latest == entry.newer) {
-              entry.latest = '..'
-              entry.latestColored = '..'
+              entry.newer = duplicate
+              entry.newerColored = duplicate
             }
           }
-        }
-
-        if (options.update && options.latest) {
-          // TODO: write file
         }
       }
     }
 
     if (entry.newer || entry.latest) {
-      (['name', 'current', 'newer', 'latest'] as const).map((key) => {
-        if (entry[key] && entry[key]!.length > chars[key]) {
-          chars[key] = entry[key]!.length
+      (['name', 'current', 'newer', 'latest'] as const).forEach((key) => {
+        if (!entry[key]) {
+          return
+        }
+
+        const length = entry[key]!.length
+
+        if (length > chars[key]) {
+          chars[key] = length
         }
       })
 
@@ -141,7 +138,7 @@ const updateDependencies = async (
 
     let backedUp = false
     try {
-      await writeFile(`${cwd()}/package.sc.json`, pkgDataBackup)
+      await writeFile(`${cwd()}/package.sc.json`, pkgDataBackup, { encoding: 'utf8' })
       backedUp = true
 
       print(`A backup ${c.green('package.sc.json')} is created in case version control is not used.`)
@@ -155,8 +152,10 @@ const updateDependencies = async (
     }
 
     if (backedUp) {
+      pkgData = replaceDependency(pkgData, updated, options)
+
       try {
-        await writeFile(`${cwd()}/package.json`, pkgData)
+        await writeFile(`${cwd()}/package.json`, pkgData, { encoding: 'utf8' })
 
         print(`Updates are written to ${c.green('package.json')}`)
       } catch {
