@@ -91,17 +91,19 @@ const displayUpdatableDependencies = (
     if (chars.newer) {
       print(
         `Run ${c.cyan('npm-sc -u')}`
+        + (options.filters ? ` ${c.cyan(options.filters.join(' '))}` : '')
         + (options.prerelease ? ` ${c.yellow('--pre')}` : '')
-        + ` to update ${c.green('package.json')} `
-        + `to ${c.green('n')}ewer versions.`,
+        + ` to update ${c.green(options.project)}`
+        + ` to ${c.green('n')}ewer versions.`,
       )
     }
     if (chars.latest) {
       print(
         `Run ${c.cyan('npm-sc -u')}${c.magenta('l')}`
+        + (options.filters ? ` ${c.cyan(options.filters.join(' '))}` : '')
         + (options.prerelease ? ` ${c.yellow('--pre')}` : '')
-        + ` to update ${c.green('package.json')} `
-        + `to ${c.magenta('l')}atest versions.`,
+        + ` to update ${c.green(options.project)}`
+        + ` to ${c.magenta('l')}atest versions.`,
       )
     }
   }

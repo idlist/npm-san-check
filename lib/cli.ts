@@ -14,6 +14,7 @@ const options: CheckerOptions = {
   update: false,
   latest: false,
   prerelease: false,
+  project: 'package.json',
   registry: 'https://registry.npmjs.org/',
 }
 
@@ -29,16 +30,18 @@ if (args.l || args.latest) {
 if (args.pre || args.prerelease) {
   options.prerelease = true
 }
+if (args.p || args.project) {
+  options.project = args.p ?? args.project
+}
 if (args.r || args.registry) {
-  options.registry = args.r
-  options.registry = args.registry
+  options.registry = args.r ?? args.registry
 }
 
 let pkgData
 try {
-  pkgData = await readFile(`${cwd()}/package.json`, { encoding: 'utf8' })
+  pkgData = await readFile(`${cwd()}/${options.project}`, { encoding: 'utf8' })
 } catch {
-  print.error(`there isn\'t a ${c.green('package.json')} file under this directory.`)
+  print.error(`there isn\'t a ${c.green(options.project)} file under this directory.`)
   exit(1)
 }
 
@@ -46,7 +49,7 @@ let pkg
 try {
   pkg = JSON.parse(pkgData)
 } catch {
-  print.error(`failed to parse ${c.green('package.json')}.`)
+  print.error(`failed to parse ${c.green(options.project)}.`)
   exit(1)
 }
 

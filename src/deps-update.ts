@@ -60,6 +60,7 @@ const updateDependencies = async (
     const entry: DependencyUpdated = {
       name: dep.name,
       type: dep.type,
+      currentRaw: dep.currentRaw,
       current: dep.current,
     }
 
@@ -127,33 +128,43 @@ const updateDependencies = async (
     }
   }
 
-  pkgData = replaceDependencies(pkgData, updated, options)
-
   if (updated.length && options.update) {
     print('')
 
     let backedUp = false
+    let backupName
+
+    const separator = options.project.lastIndexOf('.')
+    if (separator < 0) {
+      backupName = `${options.project}.sc.json`
+    } else {
+      backupName = `${options.project.slice(0, separator)}.sc.${options.project.slice(separator + 1)}`
+    }
+
     try {
-      await writeFile(`${cwd()}/package.sc.json`, pkgDataBackup, { encoding: 'utf8' })
+
+      await writeFile(`${cwd()}/${backupName}`, pkgDataBackup, { encoding: 'utf8' })
       backedUp = true
 
-      print(`A backup ${c.green('package.sc.json')} is created in case version control is not used.`)
+      print(`A backup ${c.green(backupName)} is created in case version control is not used.`)
     } catch {
       options.update = false
 
       print.error(
-        `failed to generate ${c.green('package.sc.json')}. `
-        + `The updates are not written to the ${c.green('package.json')} in case version control is not used.`,
+        `failed to generate ${c.green(backupName)}. `
+        + `The updates are not written to the ${c.green(options.project)} in case version control is not used.`,
       )
     }
 
     if (backedUp) {
-      try {
-        await writeFile(`${cwd()}/package.json`, pkgData, { encoding: 'utf8' })
+      pkgData = replaceDependencies(pkgData, updated, options)
 
-        print(`Updates are written to ${c.green('package.json')}`)
+      try {
+        await writeFile(`${cwd()}/${options.project}`, pkgData, { encoding: 'utf8' })
+
+        print(`Updates are written to ${c.green(options.project)}.`)
       } catch {
-        print.error(`failed to write to ${c.green('package.json')}.`)
+        print.error(`failed to write to ${c.green(options.project)}.`)
       }
     }
   }

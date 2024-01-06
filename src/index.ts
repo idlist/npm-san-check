@@ -29,7 +29,9 @@ const collectDependencies = (
   return entries.flatMap(([name, version]) => ({
     name,
     type,
-    current: version,
+    currentRaw: version,
+    // Clear redundant spaces for loose validation.
+    current: version.replace(/(?<!-) (?![-=<>])/g, ''),
     status: 'ok',
   }))
 }

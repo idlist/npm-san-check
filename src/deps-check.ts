@@ -43,9 +43,6 @@ const checkDependencies = async (
   }
 
   await Promise.all(deps.map(async (dep): Promise<void> => {
-    // Clear redundant spaces for loose validation.
-    dep.current = dep.current.replace(/(?<!-) (?![-=<>])/g, '')
-
     if (!semver.validRange(dep.current, { loose: true })) {
       dep.status = 'semver'
       updateChecking(dep.name)
@@ -99,9 +96,10 @@ const checkDependencies = async (
     }
 
     if (range && ['^', '~', '>', '>='].includes(range.type)) {
-      console.log(versions)
-      let newer = semver.maxSatisfying(versions, dep.current, { loose: true, includePrerelease })?.version
-      console.log(newer)
+      let newer = semver.maxSatisfying(versions, dep.current, {
+        loose: true,
+        includePrerelease,
+      })?.version
 
       if (!newer && semver.ltr(latest, formatRangeBase(range.operand as RangeBase))) {
         newer = latest

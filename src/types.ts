@@ -3,6 +3,7 @@ export interface CheckerOptions {
   update: boolean
   latest: boolean
   prerelease: boolean
+  project: string
   registry: string
 }
 
@@ -22,6 +23,7 @@ export type CheckStatus = 'ok' | CheckStatusError
 export interface Dependency {
   name: string
   type: DependencyType
+  currentRaw: string
   current: string
   status: CheckStatus
   newer?: string
