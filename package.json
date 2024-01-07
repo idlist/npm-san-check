@@ -1,10 +1,13 @@
 {
   "name": "npm-san-check",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Simple npm check with fewer dependency and fewer (almost no) functionalities.",
   "type": "module",
   "author": "i'DLisT <i@idl.ist> (https://idl.ist/)",
   "license": "MIT",
+  "files": [
+    "bin"
+  ],
   "main": "./bin/cli.js",
   "bin": {
     "npm-sc": "./bin/cli.js",
