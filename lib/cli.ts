@@ -18,7 +18,7 @@ const options: CheckerOptions = {
   registry: 'https://registry.npmjs.org/',
 }
 
-if (args._) {
+if (args._.length) {
   options.filters = args._
 }
 if (args.u || args.update) {
