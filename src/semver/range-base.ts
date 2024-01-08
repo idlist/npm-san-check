@@ -286,7 +286,7 @@ export const updateRangeBase = (
       } else {
         let color: Color
 
-        if (a.minor == 0) {
+        if (a.major == 0 && a.minor == 0) {
           color = c.red
         } else if (a.major == 0) {
           color = c.cyan
