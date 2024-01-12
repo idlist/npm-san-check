@@ -82,7 +82,7 @@ const displayUpdatableDependencies = (
 
   if (options.update) {
     print(
-      `\nUse ${c.cyan('npm install')} to install the `
+      `\nRun ${c.cyan('npm install')} to install the `
       + (options.latest ? `${c.magenta('l')}atest` : `${c.green('n')}ewer`)
       + ' versions.',
     )
