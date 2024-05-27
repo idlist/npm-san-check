@@ -1,6 +1,6 @@
 # npm-san-check
 
-*This tool is considered as a practice. Please use at your own risk.*
+> *This tool is considered as a practice. Please use at your own risk.*
 
 Yet another `package.json` update checker.
 
@@ -18,9 +18,9 @@ The CLI tool is a *practice* to mimic the core (i.e., a small subset of) functio
 
 The good side is:
 
-- It has only 5 direct dependencies (or 12 dependencies in total).
+- It has only 5 direct dependencies (or 11 packages in total).
 
-For most of the time, though, `npm-check-updates` might be preferred for your use case. The name of the tool is from the fact that using this tool might lead to your sanity crisis.
+For most of the time, though, `npm-check-updates` might be preferred for your use case. The name of the tool indicates that using this tool might lead to your sanity crisis.
 
 ## Installation
 
@@ -35,6 +35,10 @@ npx npm-san-check
 ```
 
 ## How the update is determined
+
+By default, the tool would check `dependencies` and `devDependencies`, as those dependencies are mostly safe to update.
+
+Generally, updating `peerDependencies` and `optionalDependencies` should be done manually, as they require careful treatment and wrong version would make the whole package unable to be installed or used. You can still check (and update, though not recommended) the version using this tool.
 
 ### "Newer"
 
@@ -55,10 +59,15 @@ The tool would update the dependencies to *the latest versions* with the *polici
 - Wildcards (`*`, `x`, `X`) are preserved.
 - Compound ranges (connected by `||`) are ignored.
 
+This is the strategy similar (but not equal) to the one `npm-check-updates` uses.
+
 ## Usage
 
 ```
-npm-sc [...filters] [-u | --update] [-l | --latest] [--pre | --prerelease]
+npm-sc [...filters]
+       [-u | --update] [-l | --latest] [--pre | --prerelease]
+       [-I | --no-deps] [-D | --no-dev-deps] [--peer] [--opt]
+       [-p | --package] [-r | --registry]
 ```
 
 **filters**: Packages to be updated.
@@ -68,13 +77,21 @@ npm-sc [...filters] [-u | --update] [-l | --latest] [--pre | --prerelease]
 
 **-u**, **--update**: Overwrite `package.json` with the updated dependencies.
 
-- In case version control is not used or the tool is malfunctioning, a backup file (usually `package.sc.json`) is created before updating.
+- In case version control is not used or the tool is malfunctioning, a backup file (`package.sc.json`) is created before updating.
 
 **-l**, **--latest**: Let the updater to use the "latest" updating strategy instead of "newer", which might include breaking changes.
 
 **--pre**, **--prerelease**: Include prerelease versions.
 
 - By default, prerelease versions are excluded from update targets, unless the package version itself is a prerelease version.
+
+**-I**, **--no-deps**: Ignore (direct) dependencies (`dependencies`).
+
+**-D**, **--no-dev-deps**: Ignore development dependencies (`devDependencies`).
+
+**--peer**: Check peer dependencies (`peerDependencies`).
+
+**--opt**: Check optional dependencies (`optionalDependencies`).
 
 **-p**, **--package**: Specify the location of the package file, relative to current working directory. Default to `package.json`.
 
