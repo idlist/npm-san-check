@@ -1,7 +1,7 @@
 import { escapeRegExp } from 'lodash-es'
-import { CheckerOptions, DependencyUpdated } from './types.js'
+import { CheckerOptions, DependencyUpdatable } from './types.js'
 
-const replaceDependencies = (pkgData: string, deps: DependencyUpdated[], options: CheckerOptions): string => {
+const replaceDependencies = (pkgData: string, deps: DependencyUpdatable[], options: CheckerOptions): string => {
   const usedSections: Set<string> = new Set(deps.map((dep) => dep.type))
 
   const indexOfSections: Record<string, [number, number]> = {}

@@ -36,8 +36,6 @@ npx npm-san-check
 
 ## How the update is determined
 
-*Due to the nature of the rules, you might want to run an additional* `npm upgrade` *after* `npm install`.
-
 ### "Newer"
 
 The tool would try to update the dependencies to *the newer versions that fit the semantic*:

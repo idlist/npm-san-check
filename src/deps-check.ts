@@ -20,8 +20,8 @@ interface NpmPackagePartial {
 }
 
 const limit = pRateLimit({
-  interval: 100,
-  rate: 2,
+  interval: 50,
+  rate: 1,
   concurrency: 5,
 })
 
@@ -90,12 +90,13 @@ const checkDependencies = async (
 
     dep.latest = latest
 
-    if (range && ['^', '~', '>', '>='].includes(range.type)) {
+    if (dep.status == 'ok' && range && ['^', '~', '>', '>='].includes(range.type)) {
       let newer = semver.maxSatisfying(versions, dep.current, {
         loose: true,
         includePrerelease,
       })?.version
 
+      // Possible downgrade of dependency (due to deprecating or unpublishing)
       if (!newer && semver.ltr(latest, formatRangeBase((range as RangeUnary).operand))) {
         newer = latest
       }

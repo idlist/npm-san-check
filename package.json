@@ -35,7 +35,7 @@
     "fix": "eslint . --fix"
   },
   "dependencies": {
-    "cli-progress": "^2.12.0",
+    "cli-progress": "^3.12.0",
     "kleur": "^4.1.5",
     "minimist": "^1.2.8",
     "p-ratelimit": "^1.0.1",
@@ -54,6 +54,6 @@
     "tsx": "^4.11.0",
     "type-fest": "^4.18.3",
     "typescript": "^5.4.5",
-    "typescript-eslint": "^8.0.0-alpha.16"
+    "typescript-eslint": "^8.0.0-alpha.17"
   }
 }

@@ -6,19 +6,19 @@ import print from '@/print.js'
 import { parseRange } from '@/semver/range.js'
 import { formatRangeBase, updateRangeBase } from '@/semver/range-base.js'
 import replaceDependencies from '@/replace-deps.js'
-import type { CheckerOptions, CheckErrors, DependencyChecked, DependencyUpdated } from '@/types.js'
-
-export interface CharsCount {
-  name: number
-  current: number
-  newer: number
-  latest: number
-}
+import type { CheckerOptions, DependencyChecked, DependencyUpdatable } from '@/types.js'
 
 export interface DependencyUpdateResult {
-  updated: DependencyUpdated[]
-  chars: CharsCount
-  errors: CheckErrors
+  updated: {
+    count: number
+    newer: DependencyUpdatable[]
+    latest: DependencyUpdatable[]
+  }
+  errors: {
+    network: string[]
+    semverInvalid: DependencyUpdatable[]
+    semverComplex: DependencyUpdatable[]
+  }
 }
 
 const updateDependencies = async (
@@ -28,33 +28,21 @@ const updateDependencies = async (
 ): Promise<DependencyUpdateResult | undefined> => {
   const pkgDataBackup = pkgData
 
-  const updated: DependencyUpdated[] = []
-
-  const chars: CharsCount = {
-    name: 0,
-    current: 0,
-    newer: 0,
-    latest: 0,
-  }
-
-  const errors: CheckErrors = {
-    network: [],
-    semverInvalid: [],
-    semverComplex: [],
-  }
+  const updatableNewer: DependencyUpdatable[] = []
+  const updatableLatest: DependencyUpdatable[] = []
+  const network: string[] = []
+  const semverInvalid: DependencyUpdatable[] = []
+  const semverComplex: DependencyUpdatable[] = []
 
   const duplicate = '..'
 
   for (const dep of deps) {
     if (dep.status == 'network') {
-      errors.network.push(dep.name)
-      continue
-    }
-    if (dep.status != 'ok') {
+      network.push(dep.name)
       continue
     }
 
-    const entry: DependencyUpdated = {
+    const entry: DependencyUpdatable = {
       name: dep.name,
       type: dep.type,
       currentRaw: dep.currentRaw,
@@ -63,25 +51,34 @@ const updateDependencies = async (
 
     const range = parseRange(dep.current)
 
-    if (!range || range.type == '||') {
+    if (!range) {
       continue
     }
 
-    if (range.type == '-') {
-      if (dep.latest) {
-        const latest = semver.parse(dep.latest)!
+    if (dep.status == 'semverInvalid' || dep.status == 'semverComplex') {
+      entry.latest = dep.latest
+      entry.latestColored = dep.latest
 
-        if (semver.gtr(latest, dep.current)) {
-          const rangeRight = updateRangeBase(range.operands[1], latest)
+      if (dep.status == 'semverInvalid') {
+        semverInvalid.push(dep)
+      } else if (dep.status == 'semverComplex') {
+        semverComplex.push(dep)
+      }
+    } else if (range.type == '-') {
+      const latest = semver.parse(dep.latest)!
 
-          if (rangeRight.result != 0) {
-            const rangeLeft = formatRangeBase(range.operands[0])
-            entry.latest = `${rangeLeft} - ${rangeRight.to}`
-            entry.latestColored = `${rangeLeft} - ${rangeRight.toColored}`
-          }
+      if (semver.gtr(latest, dep.current)) {
+        const rangeRight = updateRangeBase(range.operands[1], latest)
+
+        if (rangeRight.result != 0) {
+          const rangeLeft = formatRangeBase(range.operands[0])
+          entry.latest = `${rangeLeft} - ${rangeRight.to}`
+          entry.latestColored = `${rangeLeft} - ${rangeRight.toColored}`
         }
       }
-    } else {
+
+      updatableLatest.push(entry)
+    } else if (range.type != '||') {
       if (dep.newer && ['^', '~', '>', '>='].includes(range.type)) {
         const newer = semver.parse(dep.newer)!
         const newerUpdated = updateRangeBase(range.operand, newer)
@@ -92,40 +89,42 @@ const updateDependencies = async (
         }
       }
 
-      if (dep.latest) {
-        const latest = semver.parse(dep.latest)!
-        const latestUpdated = updateRangeBase(range.operand, latest)
+      const latest = semver.parse(dep.latest)!
+      const latestUpdated = updateRangeBase(range.operand, latest)
 
-        if (latestUpdated.result != 0) {
-          entry.latest = `${range.type}${latestUpdated.to}`
-          entry.latestColored = `${range.type}${latestUpdated.toColored}`
+      if (latestUpdated.result != 0) {
+        entry.latest = `${range.type}${latestUpdated.to}`
+        entry.latestColored = `${range.type}${latestUpdated.toColored}`
+      }
 
-          if (entry.latest == entry.newer) {
-            entry.newer = duplicate
-            entry.newerColored = duplicate
-          }
+      if (entry.newer && entry.latest && entry.newer == entry.latest) {
+        if (!options.latest) {
+          entry.latest = duplicate
+          entry.latestColored = duplicate
+        } else {
+          entry.newer = duplicate
+          entry.newerColored = duplicate
+        }
+      }
+
+      if (!options.latest) {
+        if (entry.newer) {
+          updatableNewer.push(entry)
+        } else if (entry.latest) {
+          updatableLatest.push(entry)
+        }
+      } else {
+        if (entry.newer || entry.latest) {
+          updatableLatest.push(entry)
         }
       }
     }
-
-    if (entry.newer || entry.latest) {
-      (['name', 'current', 'newer', 'latest'] as const).forEach((key) => {
-        if (!entry[key]) {
-          return
-        }
-
-        const length = entry[key]!.length
-
-        if (length > chars[key]) {
-          chars[key] = length
-        }
-      })
-
-      updated.push(entry)
-    }
   }
 
-  if (updated.length && options.update) {
+  const updatable = [...updatableNewer, ...(options.latest ? updatableLatest : [])]
+  const updatableCount = updatable.length
+
+  if (updatable.length && options.update) {
     print('')
 
     let backedUp = false
@@ -139,7 +138,6 @@ const updateDependencies = async (
     }
 
     try {
-
       await writeFile(`${cwd()}/${backupName}`, pkgDataBackup, { encoding: 'utf8' })
       backedUp = true
 
@@ -154,7 +152,7 @@ const updateDependencies = async (
     }
 
     if (backedUp) {
-      pkgData = replaceDependencies(pkgData, updated, options)
+      pkgData = replaceDependencies(pkgData, updatable, options)
 
       try {
         await writeFile(`${cwd()}/${options.package}`, pkgData, { encoding: 'utf8' })
@@ -167,9 +165,16 @@ const updateDependencies = async (
   }
 
   return {
-    updated,
-    chars,
-    errors,
+    updated: {
+      count: updatableCount,
+      newer: updatableNewer,
+      latest: updatableLatest,
+    },
+    errors: {
+      network,
+      semverInvalid,
+      semverComplex,
+    },
   }
 }
 

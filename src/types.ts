@@ -33,7 +33,7 @@ export interface Dependency {
 
 export type DependencyChecked = Dependency
 
-export interface DependencyUpdated extends Omit<Dependency, 'status'> {
+export interface DependencyUpdatable extends Omit<Dependency, 'status'> {
   newerColored?: string
   latestColored?: string
 }

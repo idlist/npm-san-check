@@ -22,14 +22,6 @@ export default ts.config(
       js.configs.recommended,
       ...ts.configs.recommended,
     ],
-    rules: {
-      '@typescript-eslint/no-empty': 'off',
-      '@typescript-eslint/no-empty-interface': 'off',
-
-      '@typescript-eslint/no-empty-function': 'warn',
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
-      'prefer-const': 'warn',
-    },
   },
   {
     files: tsFiles,
@@ -41,6 +33,17 @@ export default ts.config(
         project: true,
         tsconfigRootDir: import.meta.dirname,
       },
+    },
+  },
+  {
+    files: [...tsFiles, ...tsScriptFiles],
+    rules: {
+      '@typescript-eslint/no-empty': 'off',
+      '@typescript-eslint/no-empty-interface': 'off',
+
+      '@typescript-eslint/no-empty-function': 'warn',
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      'prefer-const': 'warn',
     },
   },
   {
