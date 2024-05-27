@@ -78,7 +78,7 @@ npm-sc [...filters] [-u | --update] [-l | --latest] [--pre | --prerelease]
 
 - By default, prerelease versions are excluded from update targets, unless the package version itself is a prerelease version.
 
-**-p**, **--project**: Specify the location of the package file, relative to current working directory. Default to `package.json`.
+**-p**, **--package**: Specify the location of the package file, relative to current working directory. Default to `package.json`.
 
 **-r**, **--registry**: Specify the URL of the registry. Default to npm registry.
 

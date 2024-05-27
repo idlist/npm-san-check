@@ -1,45 +1,27 @@
-import { dirname } from 'desm'
-import { FlatCompat } from '@eslint/eslintrc'
+import globals from 'globals'
 import js from '@eslint/js'
-import ts from '@typescript-eslint/parser'
-
-const __dirname = dirname(import.meta.url)
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  resolvePluginsRelativeTo: __dirname,
-})
+import ts from 'typescript-eslint'
 
 const jsFiles = [
   'eslint.config.js',
 ]
 
 const tsFiles = [
-  '*.ts',
   'src/**/*.ts',
   'lib/**/*.ts',
 ]
 
-export default [
+const tsScriptFiles = [
+  '*.ts',
+]
+
+export default ts.config(
   {
-    files: tsFiles,
-    languageOptions: {
-      parser: ts,
-      parserOptions: {
-        ecmaVersion: 'latest',
-        sourceType: 'module',
-      },
-    },
-  },
-  ...compat.config({
-    overrides: [
-      {
-        files: tsFiles,
-        extends: ['plugin:@typescript-eslint/recommended'],
-      },
+    files: [...tsFiles, ...tsScriptFiles],
+    extends: [
+      js.configs.recommended,
+      ...ts.configs.recommended,
     ],
-  }),
-  {
-    files: tsFiles,
     rules: {
       '@typescript-eslint/no-empty': 'off',
       '@typescript-eslint/no-empty-interface': 'off',
@@ -47,6 +29,18 @@ export default [
       '@typescript-eslint/no-empty-function': 'warn',
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       'prefer-const': 'warn',
+    },
+  },
+  {
+    files: tsFiles,
+    extends: [
+      ...ts.configs.recommendedTypeChecked,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
     },
   },
   {
@@ -66,6 +60,12 @@ export default [
   },
   {
     files: [...tsFiles, ...jsFiles],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.es2021,
+      },
+    },
     rules: {
       indent: ['warn', 2, { SwitchCase: 1 }],
       semi: ['warn', 'never'],
@@ -75,4 +75,4 @@ export default [
       'eol-last': ['warn', 'always'],
     },
   },
-]
+)

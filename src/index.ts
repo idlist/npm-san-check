@@ -3,7 +3,6 @@ import print from '@/print.js'
 import checkDependencies from '@/deps-check.js'
 import updateDependencies from '@/deps-update.js'
 import displayUpdatableDependencies from '@/deps-display.js'
-import { DependencyTypes } from '@/types.js'
 import type { CheckerOptions, DependencyType, Dependency } from '@/types.js'
 
 const collectDependencies = (
@@ -37,7 +36,7 @@ const collectDependencies = (
 }
 
 const check = async (pkgData: string, pkg: PackageJson, options: CheckerOptions) => {
-  const deps: Dependency[] = DependencyTypes.flatMap((type) => {
+  const deps: Dependency[] = [...options.depsTypes].flatMap((type) => {
     const deps = pkg[type] as Record<string, string>
     return pkg[type] ? collectDependencies(deps, type, options.filters) : []
   })

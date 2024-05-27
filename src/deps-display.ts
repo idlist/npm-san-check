@@ -22,15 +22,15 @@ const displayUpdatableDependencies = (
 ) => {
   const { updated, chars, errors } = result
 
-  const errored = () => errors.semver.length || errors.network.length
+  const errored = () => errors.semverInvalid.length || errors.network.length
 
   if (errored()) {
     print('')
   }
-  if (errors.semver.length) {
+  if (errors.semverInvalid.length) {
     print(
-      `Package ${errors.semver.map((name) => c.red(name)).join(', ')} `
-      + (errors.semver.length == 1
+      `Package ${errors.semverInvalid.map((name) => c.red(name)).join(', ')} `
+      + (errors.semverInvalid.length == 1
         ? 'has invalid semver range, and is skipped.'
         : 'have invalid semver ranges, and are skipped.'),
     )
@@ -75,7 +75,7 @@ const displayUpdatableDependencies = (
         ? `${' '.repeat(chars.newer - dep.newer.length)}${dep.newerColored}  `
         : (chars.newer && dep.latest ? ' '.repeat(chars.newer + 2)  : ''))
       + (chars.latest && dep.latest ?
-        `${' '.repeat(chars.latest - dep.latest.length!)}${dep.latestColored}`
+        `${' '.repeat(chars.latest - dep.latest.length)}${dep.latestColored}`
         : ''),
     )
   }
@@ -93,7 +93,7 @@ const displayUpdatableDependencies = (
         `Run ${c.cyan('npm-sc -u')}`
         + (options.filters ? ` ${c.cyan(options.filters.join(' '))}` : '')
         + (options.prerelease ? ` ${c.yellow('--pre')}` : '')
-        + ` to update ${c.green(options.project)}`
+        + ` to update ${c.green(options.package)}`
         + ` to ${c.green('n')}ewer versions.`,
       )
     }
@@ -102,7 +102,7 @@ const displayUpdatableDependencies = (
         `Run ${c.cyan('npm-sc -u')}${c.magenta('l')}`
         + (options.filters ? ` ${c.cyan(options.filters.join(' '))}` : '')
         + (options.prerelease ? ` ${c.yellow('--pre')}` : '')
-        + ` to update ${c.green(options.project)}`
+        + ` to update ${c.green(options.package)}`
         + ` to ${c.magenta('l')}atest versions.`,
       )
     }

@@ -1,10 +1,10 @@
-import Bottleneck from 'bottleneck'
+import { pRateLimit } from 'p-ratelimit'
 import semver from 'semver'
 import c from 'kleur'
 import { SingleBar } from 'cli-progress'
 import type { CheckerOptions, Dependency, DependencyChecked } from './types.js'
-import { parseRange } from './semver/range.js'
-import { RangeBase, formatRangeBase } from './semver/range-base.js'
+import { parseRange, type RangeUnary } from './semver/range.js'
+import { formatRangeBase } from './semver/range-base.js'
 
 interface NpmPackagePartial {
   'dist-tags': {
@@ -19,9 +19,10 @@ interface NpmPackagePartial {
   }
 }
 
-const limiter = new Bottleneck({
-  minTime: 50,
-  maxConcurrent: 5,
+const limit = pRateLimit({
+  interval: 100,
+  rate: 2,
+  concurrency: 5,
 })
 
 const checkDependencies = async (
@@ -44,20 +45,18 @@ const checkDependencies = async (
 
   await Promise.all(deps.map(async (dep): Promise<void> => {
     if (!semver.validRange(dep.current, { loose: true })) {
-      dep.status = 'semver'
-      updateChecking(dep.name)
-      return
+      dep.status = 'semverInvalid'
     }
 
     const range = parseRange(dep.current)
     if (range?.type == '||') {
-      return
+      dep.status = 'semverComplex'
     }
 
     let json: NpmPackagePartial
 
     try {
-      json = await limiter.schedule(async () => {
+      json = await limit(async () => {
         const res = await fetch(`${options.registry}${dep.name}`)
         return res.json()
       }) as NpmPackagePartial
@@ -67,15 +66,13 @@ const checkDependencies = async (
       return
     }
 
-    updateChecking(dep.name)
-
     let versions = Object.keys(json.versions)
       .filter((v) => !json.versions[v].deprecated)
       .map((s) => semver.parse(s)!)
 
     const includePrerelease = options.prerelease
-      || (range?.type != '-' && range?.operand.includePrerelease)
-      || (range?.type == '-' && (range.operand[0].includePrerelease || range.operand[1].includePrerelease))
+      || (range?.type != '-' && range?.type != '||' && range?.operand.includePrerelease)
+      || (range?.type == '-' && (range.operands[0].includePrerelease || range.operands[1].includePrerelease))
 
     if (!includePrerelease) {
       versions = versions.filter((v) => !v.prerelease.length)
@@ -85,15 +82,13 @@ const checkDependencies = async (
 
     let latest
 
-    if (options.prerelease) {
+    if (includePrerelease) {
       latest = versions[versions.length - 1].version
     } else {
       latest = json['dist-tags'].latest
     }
 
-    if (options.latest) {
-      dep.latest = latest
-    }
+    dep.latest = latest
 
     if (range && ['^', '~', '>', '>='].includes(range.type)) {
       let newer = semver.maxSatisfying(versions, dep.current, {
@@ -101,18 +96,20 @@ const checkDependencies = async (
         includePrerelease,
       })?.version
 
-      if (!newer && semver.ltr(latest, formatRangeBase(range.operand as RangeBase))) {
+      if (!newer && semver.ltr(latest, formatRangeBase((range as RangeUnary).operand))) {
         newer = latest
       }
 
       dep.newer = newer
     }
+
+    updateChecking(dep.name)
   }))
 
   bar.update({ rest: c.green('Done!') })
   bar.stop()
 
-  return deps as DependencyChecked[]
+  return deps
 }
 
 export default checkDependencies

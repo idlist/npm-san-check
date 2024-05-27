@@ -3,7 +3,8 @@ export interface CheckerOptions {
   update: boolean
   latest: boolean
   prerelease: boolean
-  project: string
+  depsTypes: Set<DependencyType>
+  package: string
   registry: string
 }
 
@@ -16,7 +17,7 @@ export const DependencyTypes = [
 
 export type DependencyType = typeof DependencyTypes[number]
 
-export type CheckStatusError = 'network' | 'semver'
+export type CheckStatusError = 'network' | 'semverInvalid' | 'semverComplex'
 
 export type CheckStatus = 'ok' | CheckStatusError
 

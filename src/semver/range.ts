@@ -6,16 +6,16 @@ interface RangeCompound {
 
 type RangeUnaryOp = '^' | '~' | '>' | '>=' | '<' | '<=' | '=' | ''
 
-interface RangeUnary {
+export interface RangeUnary {
   type: RangeUnaryOp
   operand: RangeBase
 }
 
 type RangeHyphenOp = '-'
 
-interface RangeHyphen {
+export interface RangeHyphen {
   type: RangeHyphenOp
-  operand: [RangeBase, RangeBase]
+  operands: [RangeBase, RangeBase]
 }
 
 type Range = RangeUnary | RangeHyphen | RangeCompound
@@ -39,7 +39,7 @@ export const parseRange = (raw: string): Range | undefined => {
   if (sides.length == 2) {
     return {
       type: '-',
-      operand: [parseRangeBase(sides[0]), parseRangeBase(sides[1])],
+      operands: [parseRangeBase(sides[0]), parseRangeBase(sides[1])],
     }
   }
 
@@ -54,7 +54,7 @@ export const parseRange = (raw: string): Range | undefined => {
       type: segment[0] as RangeUnaryOp,
       operand: parseRangeBase(segment.slice(1)),
     }
-  } else if (/[\d\*xX]/.test(segment[0])) {
+  } else if (/[\d*xX]/.test(segment[0])) {
     return {
       type: '',
       operand: parseRangeBase(segment),

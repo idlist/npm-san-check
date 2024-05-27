@@ -5,7 +5,7 @@ import c from 'kleur'
 import print from '@/print.js'
 import { parseRange } from '@/semver/range.js'
 import { formatRangeBase, updateRangeBase } from '@/semver/range-base.js'
-import replaceDependencies from './replace-deps.js'
+import replaceDependencies from '@/replace-deps.js'
 import type { CheckerOptions, CheckErrors, DependencyChecked, DependencyUpdated } from '@/types.js'
 
 export interface CharsCount {
@@ -38,17 +38,14 @@ const updateDependencies = async (
   }
 
   const errors: CheckErrors = {
-    semver: [],
     network: [],
+    semverInvalid: [],
+    semverComplex: [],
   }
 
   const duplicate = '..'
 
   for (const dep of deps) {
-    if (dep.status == 'semver') {
-      errors.semver.push(dep.name)
-      continue
-    }
     if (dep.status == 'network') {
       errors.network.push(dep.name)
       continue
@@ -75,10 +72,10 @@ const updateDependencies = async (
         const latest = semver.parse(dep.latest)!
 
         if (semver.gtr(latest, dep.current)) {
-          const rangeRight = updateRangeBase(range.operand[1], latest)
+          const rangeRight = updateRangeBase(range.operands[1], latest)
 
           if (rangeRight.result != 0) {
-            const rangeLeft = formatRangeBase(range.operand[0])
+            const rangeLeft = formatRangeBase(range.operands[0])
             entry.latest = `${rangeLeft} - ${rangeRight.to}`
             entry.latestColored = `${rangeLeft} - ${rangeRight.toColored}`
           }
@@ -134,11 +131,11 @@ const updateDependencies = async (
     let backedUp = false
     let backupName
 
-    const separator = options.project.lastIndexOf('.')
+    const separator = options.package.lastIndexOf('.')
     if (separator < 0) {
-      backupName = `${options.project}.sc.json`
+      backupName = `${options.package}.sc.json`
     } else {
-      backupName = `${options.project.slice(0, separator)}.sc.${options.project.slice(separator + 1)}`
+      backupName = `${options.package.slice(0, separator)}.sc.${options.package.slice(separator + 1)}`
     }
 
     try {
@@ -152,7 +149,7 @@ const updateDependencies = async (
 
       print.error(
         `failed to generate ${c.green(backupName)}. `
-        + `The updates are not written to the ${c.green(options.project)} in case version control is not used.`,
+        + `The updates are not written to the ${c.green(options.package)} in case version control is not used.`,
       )
     }
 
@@ -160,11 +157,11 @@ const updateDependencies = async (
       pkgData = replaceDependencies(pkgData, updated, options)
 
       try {
-        await writeFile(`${cwd()}/${options.project}`, pkgData, { encoding: 'utf8' })
+        await writeFile(`${cwd()}/${options.package}`, pkgData, { encoding: 'utf8' })
 
-        print(`Updates are written to ${c.green(options.project)}.`)
+        print(`Updates are written to ${c.green(options.package)}.`)
       } catch {
-        print.error(`failed to write to ${c.green(options.project)}.`)
+        print.error(`failed to write to ${c.green(options.package)}.`)
       }
     }
   }
