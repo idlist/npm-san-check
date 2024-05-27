@@ -97,13 +97,17 @@ const displayUpdatableDependencies = (
     )
   }
   if (semverInvalid.length) {
-    print('\nPackages that have invalid semvers:')
+    print(`\nPackages having ${c.red('invalid')} semvers:`)
     displayList(semverInvalid, options)
+  }
+  if (semverComplex.length) {
+    print(`\n Packages having ${c.yellow('complex')} semvers (for reference):`)
+    displayList(semverComplex, options)
   }
 
   const errored = network.length
-    && semverInvalid.length
-    && semverComplex.length
+    || semverInvalid.length
+    || semverComplex.length
 
   if (!count && !errored) {
     print(`\nAll dependencies are up to date! ${c.green(':3')}`)

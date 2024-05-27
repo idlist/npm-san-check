@@ -1,6 +1,6 @@
 # npm-san-check
 
-> *This tool is considered as a practice. Please use at your own risk.*
+> This tool is considered as a practice. Please use at your own risk.
 
 Yet another `package.json` update checker.
 
