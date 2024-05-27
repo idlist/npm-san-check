@@ -75,9 +75,9 @@ const updateDependencies = async (
           entry.latest = `${rangeLeft} - ${rangeRight.to}`
           entry.latestColored = `${rangeLeft} - ${rangeRight.toColored}`
         }
-      }
 
-      updatableLatest.push(entry)
+        updatableLatest.push(entry)
+      }
     } else if (range.type != '||') {
       if (dep.newer && ['^', '~', '>', '>='].includes(range.type)) {
         const newer = semver.parse(dep.newer)!
