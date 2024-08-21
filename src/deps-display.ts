@@ -59,7 +59,7 @@ const displayList = (list: DependencyUpdatable[], options: CheckerOptions) => {
   const showLatest = !!latest
 
   print(
-    `\n   ${c.cyan('n')}ame${' '.repeat(name - 4)}  `
+    `\n    ${c.cyan('n')}ame${' '.repeat(name - 4)}  `
     + ' '.repeat(current + 5)
     + (showNewer ? `${' '.repeat(newer - 5)}${C.newer}  ` : '')
     + (showLatest ? `${' '.repeat(latest - 6)}${C.latest}` : ''),
@@ -67,8 +67,8 @@ const displayList = (list: DependencyUpdatable[], options: CheckerOptions) => {
 
   for (const dep of list) {
     print(
-      `${colorType(dep.type)} `
-      + ` ${dep.name}${' '.repeat(name - dep.name.length)}  `
+      ` ${colorType(dep.type)}  `
+      + `${dep.name}${' '.repeat(name - dep.name.length)}  `
       + `${' '.repeat(current - dep.current.length)}${dep.current}  →  `
       + (showNewer && dep.newer
         ? `${' '.repeat(newer - dep.newer.length)}${dep.newerColored}  `
@@ -90,10 +90,11 @@ const displayUpdatableDependencies = (
   } = result
 
   if (network.length) {
+    const singular = network.length == 1
     print(
-      `\nPackages ${network.map((name) => c.red(name)).join(', ')} `
-      + (network.length == 1 ? 'is' : 'are')
-      + ' not checked due to connection error(s) to the registry.',
+      `\nPackage${singular ? '' : 's'} ${network.map((name) => c.red(name)).join(', ')} `
+      + (singular ? 'is' : 'are')
+      + ` not checked due to connection error${singular ? '' : 's'} to the registry.`,
     )
   }
   if (semverInvalid.length) {

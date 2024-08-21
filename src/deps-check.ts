@@ -20,7 +20,7 @@ interface NpmPackagePartial {
 }
 
 const limit = pRateLimit({
-  interval: 50,
+  interval: 100,
   rate: 1,
   concurrency: 5,
 })
@@ -57,7 +57,10 @@ const checkDependencies = async (
 
     try {
       json = await limit(async () => {
-        const res = await fetch(`${options.registry}${dep.name}`)
+        const res = await fetch(`${options.registry}${dep.name}`, {
+          method: 'GET',
+          signal: AbortSignal.timeout(10000),
+        })
         return res.json()
       }) as NpmPackagePartial
     } catch {

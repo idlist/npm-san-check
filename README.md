@@ -26,6 +26,7 @@ For most of the time, though, `npm-check-updates` might be preferred for your us
 
 ```
 npm i -g npm-san-check
+npm-sc
 ```
 
 Or, run with `npx`:
@@ -38,7 +39,7 @@ npx npm-san-check
 
 By default, the tool would check `dependencies` and `devDependencies`, as those dependencies are mostly safe to update.
 
-Generally, updating `peerDependencies` and `optionalDependencies` should be done manually, as they require careful treatment and wrong version would make the whole package unable to be installed or used. You can still check (and update, though not recommended) the version using this tool.
+Generally, updating `peerDependencies` and `optionalDependencies` should be done manually, as they require careful treatment and wrong dependency versions would cause the whole package unable to be installed or used. You can still check and update the version using this tool, though not recommended.
 
 ### "Newer"
 
@@ -77,9 +78,9 @@ npm-sc [...filters]
 
 **-u**, **--update**: Overwrite `package.json` with the updated dependencies.
 
-- In case version control is not used or the tool is malfunctioning, a backup file (`package.sc.json`) is created before updating.
+- In case version control is not used or this tool has malfunctioned, a back-up file (usually `package.sc.json`) would be created before updating.
 
-**-l**, **--latest**: Let the updater to use the "latest" updating strategy instead of "newer", which might include breaking changes.
+**-l**, **--latest**: Let the updater to use the "latest" updating strategy instead of "newer", which might be more possible to include breaking changes.
 
 **--pre**, **--prerelease**: Include prerelease versions.
 
