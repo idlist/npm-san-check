@@ -18,7 +18,7 @@ The CLI tool is a *practice* to mimic the core (i.e., a small subset of) functio
 
 The good side is:
 
-- It has only 5 direct dependencies (or 11 packages in total).
+- It has only 6 direct dependencies (or 12 packages in total), with an installation size of ~1.5MB (where `undici` takes 1MB and rest being ~500KB)
 
 For most of the time, though, `npm-check-updates` might be preferred for your use case. The name of the tool indicates that using this tool might lead to your sanity crisis.
 
@@ -68,7 +68,7 @@ This is the strategy similar (but not equal) to the one `npm-check-updates` uses
 npm-sc [...filters]
        [-u | --update] [-l | --latest] [--pre | --prerelease]
        [-I | --no-deps] [-D | --no-dev-deps] [--peer] [--opt]
-       [-p | --package] [-r | --registry]
+       [-p | --package] [-r | --registry] [--proxy]
 ```
 
 **filters**: Packages to be updated.
@@ -97,6 +97,10 @@ npm-sc [...filters]
 **-p**, **--package**: Specify the location of the package file, relative to current working directory. Default to `package.json`.
 
 **-r**, **--registry**: Specify the URL of the registry. Default to npm registry.
+
+**--proxy**: Specify the proxy server when checking the update.
+
+- Environment variables `HTTP_PROXY` and `HTTPS_PROXY` are also considered, so it's not necessary to use this option if those variables have been set.
 
 ## License
 

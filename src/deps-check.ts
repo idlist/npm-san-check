@@ -5,6 +5,7 @@ import { SingleBar } from 'cli-progress'
 import type { CheckerOptions, Dependency, DependencyChecked } from './types.js'
 import { parseRange, type RangeUnary } from './semver/range.js'
 import { formatRangeBase } from './semver/range-base.js'
+import { ProxyAgent } from 'undici'
 
 interface NpmPackagePartial {
   'dist-tags': {
@@ -20,7 +21,7 @@ interface NpmPackagePartial {
 }
 
 const limit = pRateLimit({
-  interval: 100,
+  interval: 50,
   rate: 1,
   concurrency: 5,
 })
@@ -29,6 +30,12 @@ const checkDependencies = async (
   deps: Dependency[],
   options: CheckerOptions,
 ): Promise<DependencyChecked[]> => {
+  let proxyAgent: ProxyAgent
+
+  if (options.proxy) {
+    proxyAgent = new ProxyAgent(options.proxy)
+  }
+
   const bar = new SingleBar({
     format: '[{bar}] {value}/{total}  {rest}',
     barsize: Math.min(deps.length, 40),
@@ -59,7 +66,8 @@ const checkDependencies = async (
       json = await limit(async () => {
         const res = await fetch(`${options.registry}${dep.name}`, {
           method: 'GET',
-          signal: AbortSignal.timeout(10000),
+          signal: AbortSignal.timeout(5000),
+          dispatcher: proxyAgent,
         })
         return res.json()
       }) as NpmPackagePartial

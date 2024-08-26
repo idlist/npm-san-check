@@ -6,6 +6,7 @@ export interface CheckerOptions {
   depsTypes: Set<DependencyType>
   package: string
   registry: string
+  proxy?: string
 }
 
 export const DependencyTypes = [

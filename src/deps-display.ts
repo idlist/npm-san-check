@@ -123,7 +123,9 @@ const displayUpdatableDependencies = (
       displayList(latest, options)
     }
   } else {
-    displayList(latest, options)
+    if (latest.length) {
+      displayList(latest, options)
+    }
   }
 
   if (options.update) {

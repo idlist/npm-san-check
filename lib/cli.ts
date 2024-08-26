@@ -2,6 +2,7 @@
 
 import { argv, cwd, exit } from 'node:process'
 import { readFile } from 'node:fs/promises'
+import { env } from 'node:process'
 import minimist from 'minimist'
 import c from 'kleur'
 import check from '@/index.js'
@@ -18,6 +19,13 @@ const options: CheckerOptions = {
   depsTypes: new Set(['dependencies', 'devDependencies']),
   package: 'package.json',
   registry: 'https://registry.npmjs.org/',
+}
+
+if (env.HTTP_PROXY) {
+  options.proxy = env.HTTP_PROXY
+}
+if (env.HTTPS_PROXY) {
+  options.proxy = env.HTTPS_PROXY
 }
 
 if (args._.length) {
@@ -46,6 +54,9 @@ if (args.pre || args.prerelease) {
 }
 if (args.p || args.package) {
   options.package = (args.p ?? args.package) as string
+}
+if (args.proxy) {
+  options.proxy = args.proxy as string
 }
 if (args.r || args.registry) {
   options.registry = (args.r ?? args.registry) as string
