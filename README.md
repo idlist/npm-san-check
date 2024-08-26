@@ -18,9 +18,7 @@ The CLI tool is a *practice* to mimic the core (i.e., a small subset of) functio
 
 The good side is:
 
-- It has only 6 direct dependencies (or 12 packages in total), with an installation size of ~1.5MB (where `undici` takes 1MB and rest being ~500KB)
-
-For most of the time, though, `npm-check-updates` might be preferred for your use case. The name of the tool indicates that using this tool might lead to your sanity crisis.
+- It has only 6 direct dependencies (or 12 packages in total) with an installation size of ~1.5MB (where `undici` takes 1MB and the rest being ~500KB).
 
 ## Installation
 
@@ -71,20 +69,24 @@ npm-sc [...filters]
        [-p | --package] [-r | --registry] [--proxy]
 ```
 
+### Behaviors
+
 **filters**: Packages to be updated.
 
-- Support `*` for glob matching (e.g., `*eslint*` matches every packages that has `eslint` in it's name, like `@eslint/js` or `@typescript-eslint/parser`).
-- Multiple package names are combined by **OR** logic.
+- Supports `*` for glob matching (e.g., `*eslint*` matches every packages that has `eslint` in it's name, like `@eslint/js` or `@typescript-eslint/parser`).
+- Words are combined by **OR** logic.
 
 **-u**, **--update**: Overwrite `package.json` with the updated dependencies.
 
-- In case version control is not used or this tool has malfunctioned, a back-up file (usually `package.sc.json`) would be created before updating.
+- In case version control is not used, or this tool has malfunctioned, a back-up file (usually `package.sc.json`) is created before updating.
 
-**-l**, **--latest**: Let the updater to use the "latest" updating strategy instead of "newer", which might be more possible to include breaking changes.
+**-l**, **--latest**: Let the updater to use the "latest" updating strategy instead of "newer", which might more possibly include breaking changes.
 
 **--pre**, **--prerelease**: Include prerelease versions.
 
-- By default, prerelease versions are excluded from update targets, unless the package version itself is a prerelease version.
+- By default, prerelease versions are excluded from update targets, unless the package version itself is already a prerelease version.
+
+### Scopes
 
 **-I**, **--no-deps**: Ignore (direct) dependencies (`dependencies`).
 
@@ -93,6 +95,8 @@ npm-sc [...filters]
 **--peer**: Check peer dependencies (`peerDependencies`).
 
 **--opt**: Check optional dependencies (`optionalDependencies`).
+
+### Environmental Settings
 
 **-p**, **--package**: Specify the location of the package file, relative to current working directory. Default to `package.json`.
 
