@@ -71,41 +71,41 @@ npm-sc [...filters]
 
 ### Behaviors
 
-**filters**: Packages to be updated.
+`filters`: Packages to be updated.
 
 - Supports `*` for glob matching (e.g., `*eslint*` matches every packages that have `eslint` in their name, like `@eslint/js` or `@typescript-eslint/parser`).
 - Words are combined by **OR** logic.
 
-**-u**, **--update**: Overwrite `package.json` with the updated dependencies.
+`-u`, `--update`: Overwrite `package.json` with the updated dependencies.
 
 - In case version control is not used or the tool has done something bad, a back-up file (usually `package.sc.json`) is created before updating.
 
-**-l**, **--latest**: Let the updater to use the "latest" updating strategy instead of "newer", which might be more possible to include breaking changes.
+`-l`, `--latest`: Let the updater to use the "latest" updating strategy instead of "newer", which might be more possible to include breaking changes.
 
-**--pre**, **--prerelease**: Include prerelease versions.
+`--pre`, `--prerelease`: Include prerelease versions.
 
 - By default, prerelease versions are excluded from update targets, unless the package version itself is already a prerelease.
 
 ### Scopes
 
-**-I**, **--no-deps**: Ignore (direct) dependencies (`dependencies`).
+`-I`, `--no-deps`: Ignore `dependencies`.
 
-**-D**, **--no-dev-deps**: Ignore development dependencies (`devDependencies`).
+`-D`, `--no-dev-deps`: Ignore `devDependencies`.
 
-**--peer**: Check peer dependencies (`peerDependencies`).
+`--peer`: Check `peerDependencies`.
 
-**--opt**: Check optional dependencies (`optionalDependencies`).
+`--opt`: Check `optionalDependencies`.
 
 ### Environmental Settings
 
-**-p**, **--package**: Specify the location of the package file, relative to current working directory. Default to `package.json`.
+`-p`, `--package`: Specify the location of the package file, relative to current working directory. Default to `package.json`.
 
-**-r**, **--registry**: Specify the URL of the registry. Default to the `npm` registry.
+`-r`, `--registry`: Specify the URL of the registry. Default to the `npm` registry.
 
-**--proxy**: Specify the proxy server when checking the update.
+`--proxy`: Specify the proxy server when checking the update.
 
 - Environment variables `HTTP_PROXY` and `HTTPS_PROXY` are also considered, so it's not necessary to set this option if those variables have been set.
 
 ## License
 
-MIT (c) i'DLisT 2024
+MIT © i'DLisT 2024
