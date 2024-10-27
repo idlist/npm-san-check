@@ -1,11 +1,11 @@
 import { pRateLimit } from 'p-ratelimit'
 import semver from 'semver'
 import c from 'kleur'
-import { SingleBar } from 'cli-progress'
 import type { CheckerOptions, Dependency, DependencyChecked } from './types.js'
 import { parseRange, type RangeUnary } from './semver/range.js'
 import { formatRangeBase } from './semver/range-base.js'
-import { ProxyAgent } from 'undici'
+import { fetch, ProxyAgent } from 'undici'
+import { createProgress } from './progress.js'
 
 interface NpmPackagePartial {
   'dist-tags': {
@@ -30,24 +30,20 @@ const checkDependencies = async (
   deps: Dependency[],
   options: CheckerOptions,
 ): Promise<DependencyChecked[]> => {
-  let proxyAgent: ProxyAgent
+  let proxyAgent: ProxyAgent | undefined
 
   if (options.proxy) {
     proxyAgent = new ProxyAgent(options.proxy)
   }
 
-  const bar = new SingleBar({
-    format: '[{bar}] {value}/{total}  {rest}',
-    barsize: Math.min(deps.length, 40),
-    barCompleteChar: '*',
-    barIncompleteChar: '-',
-    hideCursor: true,
+  const bar = createProgress({
+    numberOfDeps: deps.length,
   })
 
-  bar.start(deps.length, 0, { rest: '' })
+  await bar.start()
 
-  const updateChecking = (name: string) => {
-    bar.increment({ rest: `→ ${c.cyan(name)}` })
+  const updateChecking = async (name: string) => {
+    await bar.increment(`→ ${c.cyan(name)}`)
   }
 
   await Promise.all(deps.map(async (dep): Promise<void> => {
@@ -73,7 +69,7 @@ const checkDependencies = async (
       }) as NpmPackagePartial
     } catch {
       dep.status = 'network'
-      updateChecking(dep.name)
+      await updateChecking(dep.name)
       return
     }
 
@@ -115,10 +111,10 @@ const checkDependencies = async (
       dep.newer = newer
     }
 
-    updateChecking(dep.name)
+    await updateChecking(dep.name)
   }))
 
-  bar.update({ rest: c.green('Done!') })
+  await bar.increment(c.green('Done!'))
   bar.stop()
 
   return deps

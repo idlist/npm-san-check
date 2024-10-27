@@ -18,7 +18,7 @@ The CLI tool is a *practice* to mimic the core (i.e., a small subset of) functio
 
 The good side is:
 
-- It has only 6 direct dependencies (or 12 packages in total) with an installation size of ~1.5MB (where `undici` takes 1MB and the rest being ~500KB).
+- It has only 5 total dependencies with an installation size of ~1.5MB (where [`undici` takes 1.2MB while it shouldn't be the case](https://github.com/nodejs/node/issues/43187) and the rest being ~300KB).
 
 ## Installation
 

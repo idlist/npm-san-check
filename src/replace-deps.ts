@@ -1,4 +1,4 @@
-import { escapeRegExp } from 'lodash-es'
+import escapeRegExp from 'lodash-es/escapeRegExp.js'
 import { CheckerOptions, DependencyUpdatable } from './types.js'
 
 const replaceDependencies = (pkgData: string, deps: DependencyUpdatable[], options: CheckerOptions): string => {

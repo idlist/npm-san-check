@@ -1,5 +1,5 @@
-import { writeFile } from 'fs/promises'
-import { cwd } from 'process'
+import { writeFile } from 'node:fs/promises'
+import { cwd } from 'node:process'
 import semver from 'semver'
 import c from 'kleur'
 import print from '@/print.js'
