@@ -38,6 +38,7 @@ export default ts.config(
   {
     files: [...tsFiles, ...tsScriptFiles],
     rules: {
+      'no-empty': 'off',
       '@typescript-eslint/no-empty': 'off',
       '@typescript-eslint/no-empty-interface': 'off',
 
