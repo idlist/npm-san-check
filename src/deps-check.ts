@@ -1,10 +1,10 @@
 import { pRateLimit } from 'p-ratelimit'
 import semver from 'semver'
 import c from 'kleur'
+import { fetch, ProxyAgent } from 'undici'
 import type { CheckerOptions, Dependency, DependencyChecked } from './types.js'
 import { parseRange, type RangeUnary } from './semver/range.js'
 import { formatRangeBase } from './semver/range-base.js'
-import { fetch, ProxyAgent } from 'undici'
 import { createProgress } from './progress.js'
 
 interface NpmPackagePartial {

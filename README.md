@@ -73,18 +73,18 @@ npm-sc [...filters]
 
 **filters**: Packages to be updated.
 
-- Supports `*` for glob matching (e.g., `*eslint*` matches every packages that has `eslint` in it's name, like `@eslint/js` or `@typescript-eslint/parser`).
+- Supports `*` for glob matching (e.g., `*eslint*` matches every packages that have `eslint` in their name, like `@eslint/js` or `@typescript-eslint/parser`).
 - Words are combined by **OR** logic.
 
 **-u**, **--update**: Overwrite `package.json` with the updated dependencies.
 
-- In case version control is not used, or this tool has malfunctioned, a back-up file (usually `package.sc.json`) is created before updating.
+- In case version control is not used or the tool has done something bad, a back-up file (usually `package.sc.json`) is created before updating.
 
-**-l**, **--latest**: Let the updater to use the "latest" updating strategy instead of "newer", which might more possibly include breaking changes.
+**-l**, **--latest**: Let the updater to use the "latest" updating strategy instead of "newer", which might be more possible to include breaking changes.
 
 **--pre**, **--prerelease**: Include prerelease versions.
 
-- By default, prerelease versions are excluded from update targets, unless the package version itself is already a prerelease version.
+- By default, prerelease versions are excluded from update targets, unless the package version itself is already a prerelease.
 
 ### Scopes
 
@@ -100,11 +100,11 @@ npm-sc [...filters]
 
 **-p**, **--package**: Specify the location of the package file, relative to current working directory. Default to `package.json`.
 
-**-r**, **--registry**: Specify the URL of the registry. Default to npm registry.
+**-r**, **--registry**: Specify the URL of the registry. Default to the `npm` registry.
 
 **--proxy**: Specify the proxy server when checking the update.
 
-- Environment variables `HTTP_PROXY` and `HTTPS_PROXY` are also considered, so it's not necessary to use this option if those variables have been set.
+- Environment variables `HTTP_PROXY` and `HTTPS_PROXY` are also considered, so it's not necessary to set this option if those variables have been set.
 
 ## License
 
