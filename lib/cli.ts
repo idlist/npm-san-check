@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
+import check from '@old/index.js'
+import print from '@old/print.js'
+import type { CheckerOptions } from '@old/types.js'
 import { green } from 'colorette'
 import minimist from 'minimist'
 import { readFile } from 'node:fs/promises'
 import { argv, cwd, exit } from 'node:process'
 import { env } from 'node:process'
 import type { PackageJson } from 'type-fest'
-import check from '../src-old/index.js'
-import print from '../src-old/print.js'
-import type { CheckerOptions } from '../src-old/types.js'
 
 const args = minimist(argv.slice(2))
 

@@ -1,6 +1,6 @@
-import type { DependencyUpdateResult } from '@/deps-update.js'
-import print from '@/print.js'
-import type { CheckerOptions, DependencyType, DependencyUpdatable } from '@/types.js'
+import type { DependencyUpdateResult } from '@old/deps-update.js'
+import print from '@old/print.js'
+import type { CheckerOptions, DependencyType, DependencyUpdatable } from '@old/types.js'
 import c from 'kleur'
 
 const colorType = (type: DependencyType) => {

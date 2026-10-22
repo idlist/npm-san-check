@@ -31,7 +31,8 @@
   "scripts": {
     "dev": "tsx lib/cli.ts",
     "build": "tsdown",
-    "build:prod": "tsc && tsdown",
+    "prod": "tsc && tsdown",
+    "test": "vitest run",
     "lint": "oxlint",
     "fmt": "dprint fmt"
   },
