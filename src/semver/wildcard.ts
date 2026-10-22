@@ -7,7 +7,7 @@ export const isWildcard = (part: number | string) => {
 }
 
 export const isWildcardOrNumber = (part: number | WildcardChar): part is WildcardChar => {
-  return typeof part == 'string'
+  return typeof part === 'string'
 }
 
 export const parseIntOrWildcard = (raw: string): number | WildcardChar => {
@@ -25,6 +25,6 @@ export const compareWithWildcard = (a: number | WildcardChar, b: number | Wildca
   } else if (bw) {
     return -1
   } else {
-    return a == b ? 0 : (a < b ? -1 : 1)
+    return a === b ? 0 : (a < b ? -1 : 1)
   }
 }

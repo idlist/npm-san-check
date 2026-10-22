@@ -37,7 +37,7 @@ const updateDependencies = async (
   const duplicate = '..'
 
   for (const dep of deps) {
-    if (dep.status == 'network') {
+    if (dep.status === 'network') {
       network.push(dep.name)
       continue
     }
@@ -55,22 +55,22 @@ const updateDependencies = async (
       continue
     }
 
-    if (dep.status == 'semverInvalid' || dep.status == 'semverComplex') {
+    if (dep.status === 'semverInvalid' || dep.status === 'semverComplex') {
       entry.latest = dep.latest
       entry.latestColored = dep.latest
 
-      if (dep.status == 'semverInvalid') {
+      if (dep.status === 'semverInvalid') {
         semverInvalid.push(dep)
-      } else if (dep.status == 'semverComplex') {
+      } else if (dep.status === 'semverComplex') {
         semverComplex.push(dep)
       }
-    } else if (range.type == '-') {
+    } else if (range.type === '-') {
       const latest = semver.parse(dep.latest)!
 
       if (semver.gtr(latest, dep.current)) {
         const rangeRight = updateRangeBase(range.operands[1], latest)
 
-        if (rangeRight.result != 0) {
+        if (rangeRight.result !== 0) {
           const rangeLeft = formatRangeBase(range.operands[0])
           entry.latest = `${rangeLeft} - ${rangeRight.to}`
           entry.latestColored = `${rangeLeft} - ${rangeRight.toColored}`
@@ -78,12 +78,12 @@ const updateDependencies = async (
 
         updatableLatest.push(entry)
       }
-    } else if (range.type != '||') {
+    } else if (range.type !== '||') {
       if (dep.newer && ['^', '~', '>', '>='].includes(range.type)) {
         const newer = semver.parse(dep.newer)!
         const newerUpdated = updateRangeBase(range.operand, newer)
 
-        if (newerUpdated.result != 0) {
+        if (newerUpdated.result !== 0) {
           entry.newer = `${range.type}${newerUpdated.to}`
           entry.newerColored = `${range.type}${newerUpdated.toColored}`
         }
@@ -92,12 +92,12 @@ const updateDependencies = async (
       const latest = semver.parse(dep.latest)!
       const latestUpdated = updateRangeBase(range.operand, latest)
 
-      if (latestUpdated.result != 0) {
+      if (latestUpdated.result !== 0) {
         entry.latest = `${range.type}${latestUpdated.to}`
         entry.latestColored = `${range.type}${latestUpdated.toColored}`
       }
 
-      if (entry.newer && entry.latest && entry.newer == entry.latest) {
+      if (entry.newer && entry.latest && entry.newer === entry.latest) {
         if (!options.latest) {
           entry.latest = duplicate
           entry.latestColored = duplicate

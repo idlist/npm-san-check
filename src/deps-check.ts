@@ -52,7 +52,7 @@ const checkDependencies = async (
     }
 
     const range = parseRange(dep.current)
-    if (range?.type == '||') {
+    if (range?.type === '||') {
       dep.status = 'semverComplex'
     }
 
@@ -78,14 +78,14 @@ const checkDependencies = async (
       .map((s) => semver.parse(s)!)
 
     const includePrerelease = options.prerelease
-      || (range?.type != '-' && range?.type != '||' && range?.operand.includePrerelease)
-      || (range?.type == '-' && (range.operands[0].includePrerelease || range.operands[1].includePrerelease))
+      || (range?.type !== '-' && range?.type !== '||' && range?.operand.includePrerelease)
+      || (range?.type === '-' && (range.operands[0].includePrerelease || range.operands[1].includePrerelease))
 
     if (!includePrerelease) {
       versions = versions.filter((v) => !v.prerelease.length)
     }
 
-    versions = semver.sort(versions)
+    versions = semver.toSorted(versions)
 
     let latest
 
@@ -97,7 +97,7 @@ const checkDependencies = async (
 
     dep.latest = latest
 
-    if (dep.status == 'ok' && range && ['^', '~', '>', '>='].includes(range.type)) {
+    if (dep.status === 'ok' && range && ['^', '~', '>', '>='].includes(range.type)) {
       let newer = semver.maxSatisfying(versions, dep.current, {
         loose: true,
         includePrerelease,

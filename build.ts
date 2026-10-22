@@ -7,5 +7,5 @@ build({
   platform: 'node',
   format: 'esm',
   bundle: true,
-  external: [...Object.keys(pkg.dependencies)],
+  external: Object.keys(pkg.dependencies),
 })

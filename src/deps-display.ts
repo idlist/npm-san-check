@@ -90,7 +90,7 @@ const displayUpdatableDependencies = (
   } = result
 
   if (network.length) {
-    const singular = network.length == 1
+    const singular = network.length === 1
     print(
       `\nPackage${singular ? '' : 's'} ${network.map((name) => c.red(name)).join(', ')} `
         + (singular ? 'is' : 'are')

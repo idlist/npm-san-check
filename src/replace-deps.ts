@@ -25,18 +25,18 @@ const replaceDependencies = (pkgData: string, deps: DependencyUpdatable[], optio
 
       let token = ''
 
-      if (c == '{') {
+      if (c === '{') {
         depth += 1
-      } else if (c == '}') {
+      } else if (c === '}') {
         depth -= 1
-      } else if (c == '\\') {
+      } else if (c === '\\') {
         if (str) {
           if (escape) {
             buffer += '\\'
           }
           escape = !escape
         }
-      } else if (c == '"') {
+      } else if (c === '"') {
         if (escape) {
           if (str) {
             buffer += '"'
@@ -69,16 +69,16 @@ const replaceDependencies = (pkgData: string, deps: DependencyUpdatable[], optio
       // The value part ends with ',' with the same depth (which is 1 in this case),
       // or '}' (which is end of the JSON body).
 
-      if (depth == 1 && (c == ',' || c == '}')) {
+      if (depth === 1 && (c === ',' || c === '}')) {
         key = true
 
         if (keyUsed) {
           endIndex = i
           indexOfSections[name] = [startIndex, endIndex]
         }
-      } else if (c == '{' || c == '[') {
+      } else if (c === '{' || c === '[') {
         depth += 1
-      } else if (c == '}' || c == ']') {
+      } else if (c === '}' || c === ']') {
         depth -= 1
       }
     }
@@ -87,7 +87,7 @@ const replaceDependencies = (pkgData: string, deps: DependencyUpdatable[], optio
   for (const [section, indexes] of Object.entries(indexOfSections)) {
     let listData = pkgData.slice(...indexes)
 
-    for (const dep of deps.filter((dep) => dep.type == section)) {
+    for (const dep of deps.filter((dep) => dep.type === section)) {
       const reCurrent = escapeRegExp(dep.currentRaw)
       const updated = options.latest ? dep.latest : dep.newer
       const depSearcher = new RegExp(`"${dep.name}"\\s*:\\s*"${reCurrent}"`, 'g')

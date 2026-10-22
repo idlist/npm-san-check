@@ -77,17 +77,17 @@ export const comparePrerelease = (a: Prerelease, b: Prerelease): ComparedPrerele
   const length = a.length < b.length ? a.length : b.length
 
   for (let i = 0; i < length; i++) {
-    if (typeof a[i] == typeof b[i] && a[i] != b[i]) {
+    if (typeof a[i] === typeof b[i] && a[i] !== b[i]) {
       return {
         result: a[i] < b[i] ? -1 : 1,
         index: i,
       }
-    } else if (typeof a[i] == 'number' && typeof b[i] == 'string') {
+    } else if (typeof a[i] === 'number' && typeof b[i] === 'string') {
       return {
         result: -1,
         index: i,
       }
-    } else if (typeof a[i] == 'string' && typeof b[i] == 'number') {
+    } else if (typeof a[i] === 'string' && typeof b[i] === 'number') {
       return {
         result: 1,
         index: i,
@@ -95,7 +95,7 @@ export const comparePrerelease = (a: Prerelease, b: Prerelease): ComparedPrerele
     }
   }
 
-  if (a.length == b.length) {
+  if (a.length === b.length) {
     return {
       result: 0,
     }
@@ -157,7 +157,7 @@ export const useRangeColorByPart = (key: ColoredPart, color: Color): RangeBaseCo
   const used: RangeBaseColor = {}
 
   for (const part of ColoredParts) {
-    if (part == key) {
+    if (part === key) {
       currentColor = color
     }
     if (currentColor) {
@@ -172,17 +172,17 @@ const clone = structuredClone
 
 export const overrideRangeBaseFrom = (from: RangeBase, to: Semver, part: SemverPart): RangeBase => {
   const cloned = clone(from)
-  const pos = SemverParts.findIndex((value) => value == part)
+  const pos = SemverParts.findIndex((value) => value === part)
 
   for (let i = pos; i < SemverParts.length; i++) {
     const key = SemverParts[i]
 
-    if (typeof cloned[key] != 'string') {
+    if (typeof cloned[key] !== 'string') {
       cloned[key] = clone(to[key]) as never
     }
 
-    if (key == 'prerelease' && to.prerelease) {
-      cloned.includePrerelease = to.prerelease.length ? true : false
+    if (key === 'prerelease' && to.prerelease) {
+      cloned.includePrerelease = !!to.prerelease.length
     }
   }
 
@@ -211,7 +211,7 @@ export const updateRangeBase = (
       to,
       toColored: to,
     }
-  } else if (a.major != b.major) {
+  } else if (a.major !== b.major) {
     const to = overrideRangeBaseFrom(a, b, 'major')
 
     if (a.major > b.major) {
@@ -238,7 +238,7 @@ export const updateRangeBase = (
         to,
         toColored: to,
       }
-    } else if (a.minor != b.minor) {
+    } else if (a.minor !== b.minor) {
       const to = overrideRangeBaseFrom(a, b, 'minor')
 
       if (a.minor > b.minor) {
@@ -250,7 +250,7 @@ export const updateRangeBase = (
       } else {
         let color: Color
 
-        if (a.major == 0) {
+        if (a.major === 0) {
           color = c.red
         } else {
           color = c.cyan
@@ -274,7 +274,7 @@ export const updateRangeBase = (
         to,
         toColored: to,
       }
-    } else if (a.patch != b.patch) {
+    } else if (a.patch !== b.patch) {
       const to = overrideRangeBaseFrom(a, b, 'patch')
 
       if (a.patch > b.patch) {
@@ -286,9 +286,9 @@ export const updateRangeBase = (
       } else {
         let color: Color
 
-        if (a.major == 0 && a.minor == 0) {
+        if (a.major === 0 && a.minor === 0) {
           color = c.red
-        } else if (a.major == 0) {
+        } else if (a.major === 0) {
           color = c.cyan
         } else {
           color = c.green
@@ -306,7 +306,7 @@ export const updateRangeBase = (
   if (a.includePrerelease) {
     const compared = comparePrerelease(a.prerelease, b.prerelease)
 
-    if (compared.result != 0) {
+    if (compared.result !== 0) {
       const to = overrideRangeBaseFrom(a, b, 'prerelease')
 
       if (compared.result > 0) {

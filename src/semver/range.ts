@@ -36,7 +36,7 @@ export const parseRange = (raw: string): Range | undefined => {
   // Hyphen.
   const sides = segment.split(' - ')
 
-  if (sides.length == 2) {
+  if (sides.length === 2) {
     return {
       type: '-',
       operands: [parseRangeBase(sides[0]), parseRangeBase(sides[1])],
