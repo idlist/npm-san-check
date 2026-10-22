@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { atom, type AtomAction, bg, type Declor, type DeclorPiece, fg, style, toDecl } from './atoms.js'
+import { atom, type AtomAction, bg, type Declor, type DeclorPiece, fg, style, toDecl } from './atoms'
 
 describe('toDecl', () => {
   it('wraps a string into a text-only declaration', () => {

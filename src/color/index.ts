@@ -1,5 +1,5 @@
 import { styleText } from 'node:util'
-import { type DeclorPiece, fg, type TextStyle } from './atoms.js'
+import { type DeclorPiece, fg, type TextStyle } from './atoms'
 
 export {
   black,

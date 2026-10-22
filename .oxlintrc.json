@@ -14,6 +14,7 @@
   },
   "rules": {
     "eqeqeq": ["warn", "smart"],
-    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }]
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
+    "no-underscore-dangle": "off"
   }
 }

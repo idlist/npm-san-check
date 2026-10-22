@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { bold, declor, fgHex, red } from './index.js'
+import { bold, declor, fgHex, red } from './index'
 
 vi.stubEnv('FORCE_COLOR', '1')
 

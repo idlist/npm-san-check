@@ -1,16 +1,17 @@
 {
   "$schema": "https://www.schemastore.org/tsconfig",
   "compilerOptions": {
-    "module": "nodenext",
+    "module": "esnext",
     "target": "es2024",
     "types": ["node"],
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "moduleResolution": "node16",
+    "moduleResolution": "bundler",
     "noEmit": true,
     "paths": {
       "@old/*": ["./src-old/*"],
-      "@declor/*": ["./src/declor/*"]
+      "@src/*": ["./src/*"],
+      "@declor/*": ["./src/color/*"]
     }
   },
   "include": ["src/**/*", "lib/**/*"]
