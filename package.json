@@ -22,8 +22,8 @@
   "type": "module",
   "main": "bin/cli.js",
   "bin": {
-    "npm-san-check": "bin/cli.js",
-    "npm-sc": "bin/cli.js"
+    "npm-san-check": "NODE_OPTIONS='--use-env-proxy' node bin/cli.js",
+    "sanch": "NODE_OPTIONS='--use-env-proxy' node bin/cli.js"
   },
   "files": [
     "bin"
@@ -54,7 +54,7 @@
     "tsdown": "^0.23.1",
     "tsx": "^4.23.15",
     "type-fest": "^5.10.0",
-    "typescript": "^5.6.3",
+    "typescript": "^7.0.2",
     "vitest": "^5.0.5"
   },
   "allowScripts": {

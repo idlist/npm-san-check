@@ -1,6 +1,6 @@
 import c from 'kleur'
 import semver from 'semver'
-import { fetch, ProxyAgent } from 'undici'
+// import { fetch, ProxyAgent } from 'undici'
 import { createProgress } from './progress.js'
 import { formatRangeBase } from './semver/range-base.js'
 import { parseRange, type RangeUnary } from './semver/range.js'
@@ -23,12 +23,6 @@ const checkDependencies = async (
   deps: Dependency[],
   options: CheckerOptions,
 ): Promise<DependencyChecked[]> => {
-  let proxyAgent: ProxyAgent | undefined
-
-  if (options.proxy) {
-    proxyAgent = new ProxyAgent(options.proxy)
-  }
-
   const bar = createProgress({
     numberOfDeps: deps.length,
   })
@@ -54,8 +48,7 @@ const checkDependencies = async (
     try {
       const response = await fetch(`${options.registry}${dep.name}`, {
         method: 'GET',
-        signal: AbortSignal.timeout(5000),
-        dispatcher: proxyAgent,
+        signal: AbortSignal.timeout(10000),
       })
       json = await response.json() as NpmPackagePartial
     } catch {

@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
-import check from '@/index.js'
-import print from '@/print.js'
-import type { CheckerOptions } from '@/types.js'
 import { green } from 'colorette'
 import minimist from 'minimist'
 import { readFile } from 'node:fs/promises'
 import { argv, cwd, exit } from 'node:process'
 import { env } from 'node:process'
 import type { PackageJson } from 'type-fest'
+import check from '../src-old/index.js'
+import print from '../src-old/print.js'
+import type { CheckerOptions } from '../src-old/types.js'
 
 const args = minimist(argv.slice(2))
 
@@ -43,9 +43,6 @@ if (args.I || args.deps === false) {
 if (args.D || args['dev-deps'] === false) {
   options.depsTypes.delete('devDependencies')
 }
-if (args.peer) {
-  options.depsTypes.add('peerDependencies')
-}
 if (args.opt) {
   options.depsTypes.add('optionalDependencies')
 }
@@ -54,9 +51,6 @@ if (args.pre || args.prerelease) {
 }
 if (args.p || args.package) {
   options.package = (args.p ?? args.package) as string
-}
-if (args.proxy) {
-  options.proxy = args.proxy as string
 }
 if (args.r || args.registry) {
   options.registry = (args.r ?? args.registry) as string
