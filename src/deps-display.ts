@@ -1,7 +1,7 @@
-import c from 'kleur'
-import print from '@/print.js'
 import type { DependencyUpdateResult } from '@/deps-update.js'
+import print from '@/print.js'
 import type { CheckerOptions, DependencyType, DependencyUpdatable } from '@/types.js'
+import c from 'kleur'
 
 const colorType = (type: DependencyType) => {
   switch (type) {
@@ -34,7 +34,7 @@ const displayList = (list: DependencyUpdatable[], options: CheckerOptions) => {
 
   for (const item of list) {
     keys.forEach((key) => {
-      const length = (item[key as keyof DependencyUpdatable])?.length ?? 0
+      const length = item[key as keyof DependencyUpdatable]?.length ?? 0
       if (length > stats[key]) {
         stats[key] = length
       }
@@ -60,22 +60,22 @@ const displayList = (list: DependencyUpdatable[], options: CheckerOptions) => {
 
   print(
     `\n    ${c.cyan('n')}ame${' '.repeat(name - 4)}  `
-    + ' '.repeat(current + 5)
-    + (showNewer ? `${' '.repeat(newer - 5)}${C.newer}  ` : '')
-    + (showLatest ? `${' '.repeat(latest - 6)}${C.latest}` : ''),
+      + ' '.repeat(current + 5)
+      + (showNewer ? `${' '.repeat(newer - 5)}${C.newer}  ` : '')
+      + (showLatest ? `${' '.repeat(latest - 6)}${C.latest}` : ''),
   )
 
   for (const dep of list) {
     print(
       ` ${colorType(dep.type)}  `
-      + `${dep.name}${' '.repeat(name - dep.name.length)}  `
-      + `${' '.repeat(current - dep.current.length)}${dep.current}  →  `
-      + (showNewer && dep.newer
-        ? `${' '.repeat(newer - dep.newer.length)}${dep.newerColored}  `
-        : (showNewer ? ' '.repeat(newer + 2) : ''))
-      + (showLatest && dep.latest ?
-        `${' '.repeat(latest - dep.latest.length)}${dep.latestColored}`
-        : ''),
+        + `${dep.name}${' '.repeat(name - dep.name.length)}  `
+        + `${' '.repeat(current - dep.current.length)}${dep.current}  →  `
+        + (showNewer && dep.newer
+          ? `${' '.repeat(newer - dep.newer.length)}${dep.newerColored}  `
+          : (showNewer ? ' '.repeat(newer + 2) : ''))
+        + (showLatest && dep.latest
+          ? `${' '.repeat(latest - dep.latest.length)}${dep.latestColored}`
+          : ''),
     )
   }
 }
@@ -93,8 +93,8 @@ const displayUpdatableDependencies = (
     const singular = network.length == 1
     print(
       `\nPackage${singular ? '' : 's'} ${network.map((name) => c.red(name)).join(', ')} `
-      + (singular ? 'is' : 'are')
-      + ` not checked due to connection error${singular ? '' : 's'} to the registry.`,
+        + (singular ? 'is' : 'are')
+        + ` not checked due to connection error${singular ? '' : 's'} to the registry.`,
     )
   }
   if (semverInvalid.length) {
@@ -131,27 +131,27 @@ const displayUpdatableDependencies = (
   if (options.update) {
     print(
       `\nRun ${c.cyan('npm install')} to install the `
-      + (options.latest ? C.latest : C.newer)
-      + ' versions.',
+        + (options.latest ? C.latest : C.newer)
+        + ' versions.',
     )
   } else {
     print('')
     if (newer.length) {
       print(
         `Run ${c.cyan('npm-sc -u')}`
-        + (options.filters ? ` ${c.cyan(options.filters.join(' '))}` : '')
-        + (options.prerelease ? ` ${c.yellow('--pre')}` : '')
-        + ` to update ${c.green(options.package)}`
-        + ` to the ${C.newer} versions.`,
+          + (options.filters ? ` ${c.cyan(options.filters.join(' '))}` : '')
+          + (options.prerelease ? ` ${c.yellow('--pre')}` : '')
+          + ` to update ${c.green(options.package)}`
+          + ` to the ${C.newer} versions.`,
       )
     }
     if (latest.length) {
       print(
         `Run ${c.cyan('npm-sc -u')}${c.magenta('l')}`
-        + (options.filters ? ` ${c.cyan(options.filters.join(' '))}` : '')
-        + (options.prerelease ? ` ${c.yellow('--pre')}` : '')
-        + ` to update ${c.green(options.package)}`
-        + ` to the ${C.latest} versions.`,
+          + (options.filters ? ` ${c.cyan(options.filters.join(' '))}` : '')
+          + (options.prerelease ? ` ${c.yellow('--pre')}` : '')
+          + ` to update ${c.green(options.package)}`
+          + ` to the ${C.latest} versions.`,
       )
     }
   }

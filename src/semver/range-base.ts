@@ -1,7 +1,7 @@
-import c, { Color } from 'kleur'
-import { SemverParts, type Prerelease, type Semver, type SemverPart, takeSemverFrom } from './semver.js'
-import { isWildcard, isWildcardOrNumber, parseIntOrWildcard, type WildcardChar } from './wildcard.js'
+import c, { type Color } from 'kleur'
 import { SemVer } from 'semver'
+import { type Prerelease, type Semver, type SemverPart, SemverParts, takeSemverFrom } from './semver.js'
+import { isWildcard, isWildcardOrNumber, parseIntOrWildcard, type WildcardChar } from './wildcard.js'
 
 export interface RangeBase {
   major: number | WildcardChar

@@ -1,5 +1,5 @@
-import globals from 'globals'
 import js from '@eslint/js'
+import globals from 'globals'
 import ts from 'typescript-eslint'
 
 const jsFiles = [

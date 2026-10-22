@@ -1,17 +1,17 @@
+import c from 'kleur'
 import { pRateLimit } from 'p-ratelimit'
 import semver from 'semver'
-import c from 'kleur'
 import { fetch, ProxyAgent } from 'undici'
-import type { CheckerOptions, Dependency, DependencyChecked } from './types.js'
-import { parseRange, type RangeUnary } from './semver/range.js'
-import { formatRangeBase } from './semver/range-base.js'
 import { createProgress } from './progress.js'
+import { formatRangeBase } from './semver/range-base.js'
+import { parseRange, type RangeUnary } from './semver/range.js'
+import type { CheckerOptions, Dependency, DependencyChecked } from './types.js'
 
 interface NpmPackagePartial {
   'dist-tags': {
     latest: string
     [prop: string]: string
-  },
+  }
   versions: {
     [prop: string]: {
       deprecated: string

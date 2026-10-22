@@ -1,6 +1,6 @@
-import { Readline } from 'node:readline/promises'
+import { clamp } from 'es-toolkit'
 import { stdout as output } from 'node:process'
-import clamp from 'lodash-es/clamp.js'
+import { Readline } from 'node:readline/promises'
 
 interface ProgressOptions {
   numberOfDeps: number

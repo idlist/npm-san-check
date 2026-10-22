@@ -1,5 +1,5 @@
-import escapeRegExp from 'lodash-es/escapeRegExp.js'
-import { CheckerOptions, DependencyUpdatable } from './types.js'
+import { escapeRegExp } from 'es-toolkit'
+import type { CheckerOptions, DependencyUpdatable } from './types.js'
 
 const replaceDependencies = (pkgData: string, deps: DependencyUpdatable[], options: CheckerOptions): string => {
   const usedSections: Set<string> = new Set(deps.map((dep) => dep.type))

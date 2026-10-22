@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
-import { argv, cwd, exit } from 'node:process'
-import { readFile } from 'node:fs/promises'
-import { env } from 'node:process'
-import minimist from 'minimist'
-import c from 'kleur'
 import check from '@/index.js'
 import print from '@/print.js'
 import type { CheckerOptions } from '@/types.js'
-import { PackageJson } from 'type-fest'
+import c from 'kleur'
+import minimist from 'minimist'
+import { readFile } from 'node:fs/promises'
+import { argv, cwd, exit } from 'node:process'
+import { env } from 'node:process'
+import type { PackageJson } from 'type-fest'
 
 const args = minimist(argv.slice(2))
 

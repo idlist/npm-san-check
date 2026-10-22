@@ -1,9 +1,9 @@
-import type { PackageJson } from 'type-fest'
-import print from '@/print.js'
 import checkDependencies from '@/deps-check.js'
-import updateDependencies from '@/deps-update.js'
 import displayUpdatableDependencies from '@/deps-display.js'
-import type { CheckerOptions, DependencyType, Dependency } from '@/types.js'
+import updateDependencies from '@/deps-update.js'
+import print from '@/print.js'
+import type { CheckerOptions, Dependency, DependencyType } from '@/types.js'
+import type { PackageJson } from 'type-fest'
 
 const collectDependencies = (
   record: Record<string, string>,

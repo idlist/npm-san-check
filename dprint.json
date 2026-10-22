@@ -1,0 +1,18 @@
+{
+  "lineWidth": 120,
+  "typescript": {
+    "semiColons": "asi",
+    "quoteStyle": "alwaysSingle"
+  },
+  "json": {
+  },
+  "excludes": [
+    "bin",
+    "**/node_modules",
+    "**/*-lock.json",
+  ],
+  "plugins": [
+    "npm:@dprint/typescript@0.96.1",
+    "npm:@dprint/json@0.25.2",
+  ]
+}

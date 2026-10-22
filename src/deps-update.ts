@@ -1,12 +1,12 @@
+import print from '@/print.js'
+import replaceDependencies from '@/replace-deps.js'
+import { formatRangeBase, updateRangeBase } from '@/semver/range-base.js'
+import { parseRange } from '@/semver/range.js'
+import type { CheckerOptions, DependencyChecked, DependencyUpdatable } from '@/types.js'
+import c from 'kleur'
 import { writeFile } from 'node:fs/promises'
 import { cwd } from 'node:process'
 import semver from 'semver'
-import c from 'kleur'
-import print from '@/print.js'
-import { parseRange } from '@/semver/range.js'
-import { formatRangeBase, updateRangeBase } from '@/semver/range-base.js'
-import replaceDependencies from '@/replace-deps.js'
-import type { CheckerOptions, DependencyChecked, DependencyUpdatable } from '@/types.js'
 
 export interface DependencyUpdateResult {
   updated: {
@@ -147,7 +147,7 @@ const updateDependencies = async (
 
       print.error(
         `failed to generate ${c.green(backupName)}. `
-        + `The updates are not written to the ${c.green(options.package)} in case version control is not used.`,
+          + `The updates are not written to the ${c.green(options.package)} in case version control is not used.`,
       )
     }
 
