@@ -1,5 +1,4 @@
 import c from 'kleur'
-import { pRateLimit } from 'p-ratelimit'
 import semver from 'semver'
 import { fetch, ProxyAgent } from 'undici'
 import { createProgress } from './progress.js'
@@ -19,12 +18,6 @@ interface NpmPackagePartial {
     }
   }
 }
-
-const limit = pRateLimit({
-  interval: 50,
-  rate: 1,
-  concurrency: 5,
-})
 
 const checkDependencies = async (
   deps: Dependency[],
@@ -46,7 +39,7 @@ const checkDependencies = async (
     await bar.increment(`→ ${c.cyan(name)}`)
   }
 
-  await Promise.all(deps.map(async (dep): Promise<void> => {
+  for await (const dep of deps) {
     if (!semver.validRange(dep.current, { loose: true })) {
       dep.status = 'semverInvalid'
     }
@@ -59,18 +52,16 @@ const checkDependencies = async (
     let json: NpmPackagePartial
 
     try {
-      json = await limit(async () => {
-        const res = await fetch(`${options.registry}${dep.name}`, {
-          method: 'GET',
-          signal: AbortSignal.timeout(5000),
-          dispatcher: proxyAgent,
-        })
-        return res.json()
-      }) as NpmPackagePartial
+      const response = await fetch(`${options.registry}${dep.name}`, {
+        method: 'GET',
+        signal: AbortSignal.timeout(5000),
+        dispatcher: proxyAgent,
+      })
+      json = await response.json() as NpmPackagePartial
     } catch {
       dep.status = 'network'
       await updateChecking(dep.name)
-      return
+      continue
     }
 
     let versions = Object.keys(json.versions)
@@ -85,7 +76,7 @@ const checkDependencies = async (
       versions = versions.filter((v) => !v.prerelease.length)
     }
 
-    versions = semver.toSorted(versions)
+    semver.sort(versions)
 
     let latest
 
@@ -112,7 +103,7 @@ const checkDependencies = async (
     }
 
     await updateChecking(dep.name)
-  }))
+  }
 
   await bar.increment(c.green('Done!'))
   bar.stop()

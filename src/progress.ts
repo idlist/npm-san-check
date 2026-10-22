@@ -6,6 +6,19 @@ interface ProgressOptions {
   numberOfDeps: number
 }
 
+function hideCursor() {
+  output.write('\u001B[?25l')
+}
+
+function showCursor() {
+  output.write('\u001B[?25h')
+}
+
+function stop() {
+  showCursor()
+  output.write('\n')
+}
+
 export const createProgress = (options: ProgressOptions) => {
   const rlControl = new Readline(output)
   const complete = '*'
@@ -14,14 +27,6 @@ export const createProgress = (options: ProgressOptions) => {
   const total = options.numberOfDeps
   const size = Math.min(total, 40)
   let current = 0
-
-  const hideCursor = () => {
-    output.write('\u001B[?25l')
-  }
-
-  const showCursor = () => {
-    output.write('\u001B[?25h')
-  }
 
   const bar = (info: string) => {
     const charsComplete = Math.ceil(current / total * size)
@@ -45,11 +50,6 @@ export const createProgress = (options: ProgressOptions) => {
   const increment = async (info: string) => {
     current = clamp(current + 1, 0, total)
     await updateDisplay(info)
-  }
-
-  const stop = () => {
-    showCursor()
-    output.write('\n')
   }
 
   return {

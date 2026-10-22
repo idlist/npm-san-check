@@ -3,7 +3,7 @@
 import check from '@/index.js'
 import print from '@/print.js'
 import type { CheckerOptions } from '@/types.js'
-import c from 'kleur'
+import { green } from 'colorette'
 import minimist from 'minimist'
 import { readFile } from 'node:fs/promises'
 import { argv, cwd, exit } from 'node:process'
@@ -64,9 +64,9 @@ if (args.r || args.registry) {
 
 let pkgData
 try {
-  pkgData = await readFile(`${cwd()}/${options.package}`, { encoding: 'utf8' })
+  pkgData = await readFile(`${cwd()}/${options.package}`, { encoding: 'utf-8' })
 } catch {
-  print.error(`there isn't a ${c.green(options.package)} file under this directory.`)
+  print.error(`there isn't a ${green(options.package)} file under this directory.`)
   exit(1)
 }
 
@@ -74,7 +74,7 @@ let pkg: PackageJson
 try {
   pkg = JSON.parse(pkgData) as PackageJson
 } catch {
-  print.error(`failed to parse ${c.green(options.package)}.`)
+  print.error(`failed to parse ${green(options.package)}.`)
   exit(1)
 }
 

@@ -1,8 +1,5 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "ignorePatterns": [
-    "bin"
-  ],
   "plugins": [
     "typescript",
     "unicorn",
@@ -10,13 +7,13 @@
   ],
   "categories": {
     "correctness": "error",
-    "suspicious": "warn",
+    "suspicious": "warn"
   },
   "env": {
     "builtin": true
   },
   "rules": {
     "eqeqeq": ["warn", "smart"],
-    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }]
   }
 }

@@ -37,12 +37,12 @@ const collectDependencies = (
 
 const check = async (pkgData: string, pkg: PackageJson, options: CheckerOptions) => {
   const deps: Dependency[] = [...options.depsTypes].flatMap((type) => {
-    const deps = pkg[type] as Record<string, string>
-    return pkg[type] ? collectDependencies(deps, type, options.filters) : []
+    const rawDeps = pkg[type] as Record<string, string>
+    return pkg[type] ? collectDependencies(rawDeps, type, options.filters) : []
   })
 
   if (!deps.length) {
-    print('No dependencies.')
+    print.info('No dependencies.')
     return
   }
 

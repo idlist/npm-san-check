@@ -87,7 +87,7 @@ const replaceDependencies = (pkgData: string, deps: DependencyUpdatable[], optio
   for (const [section, indexes] of Object.entries(indexOfSections)) {
     let listData = pkgData.slice(...indexes)
 
-    for (const dep of deps.filter((dep) => dep.type === section)) {
+    for (const dep of deps.filter((d) => d.type === section)) {
       const reCurrent = escapeRegExp(dep.currentRaw)
       const updated = options.latest ? dep.latest : dep.newer
       const depSearcher = new RegExp(`"${dep.name}"\\s*:\\s*"${reCurrent}"`, 'g')

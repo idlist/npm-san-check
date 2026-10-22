@@ -1,8 +1,12 @@
-import c from 'kleur'
+import { red } from 'colorette'
 
-// Rename necessary logging to distinguish with debug logs.
-const print = (...content: unknown[]) => void console.log(...content)
-
-print.error = (...content: unknown[]) => void console.log(c.red('Error:'), content)
+const print = {
+  info(...content: unknown[]) {
+    console.log(...content)
+  },
+  error(...content: unknown[]) {
+    console.log(red('Error:'), ...content)
+  },
+}
 
 export default print

@@ -124,6 +124,8 @@ interface FormatRangeOptions {
   build: boolean
 }
 
+const is = (cond: unknown, content: string) => cond ? content : ''
+
 export const formatRangeBase = (
   base: RangeBase,
   color: RangeBaseColor = {},
@@ -135,7 +137,6 @@ export const formatRangeBase = (
     ...options,
   }
 
-  const is = (cond: unknown, content: string) => cond ? content : ''
   const major = useColor(base.major, color.major)
   const minor = useColor(base.minor, color.minor)
   const patch = useColor(base.patch, color.patch)

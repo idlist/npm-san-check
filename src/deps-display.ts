@@ -58,7 +58,7 @@ const displayList = (list: DependencyUpdatable[], options: CheckerOptions) => {
   const showNewer = !(options.latest && options.update) && !!newer
   const showLatest = !!latest
 
-  print(
+  print.info(
     `\n    ${c.cyan('n')}ame${' '.repeat(name - 4)}  `
       + ' '.repeat(current + 5)
       + (showNewer ? `${' '.repeat(newer - 5)}${C.newer}  ` : '')
@@ -66,7 +66,7 @@ const displayList = (list: DependencyUpdatable[], options: CheckerOptions) => {
   )
 
   for (const dep of list) {
-    print(
+    print.info(
       ` ${colorType(dep.type)}  `
         + `${dep.name}${' '.repeat(name - dep.name.length)}  `
         + `${' '.repeat(current - dep.current.length)}${dep.current}  →  `
@@ -91,18 +91,18 @@ const displayUpdatableDependencies = (
 
   if (network.length) {
     const singular = network.length === 1
-    print(
+    print.info(
       `\nPackage${singular ? '' : 's'} ${network.map((name) => c.red(name)).join(', ')} `
         + (singular ? 'is' : 'are')
         + ` not checked due to connection error${singular ? '' : 's'} to the registry.`,
     )
   }
   if (semverInvalid.length) {
-    print(`\nPackages having ${c.red('invalid')} semvers:`)
+    print.info(`\nPackages having ${c.red('invalid')} semvers:`)
     displayList(semverInvalid, options)
   }
   if (semverComplex.length) {
-    print(`\n Packages having ${c.yellow('complex')} semvers (for reference):`)
+    print.info(`\n Packages having ${c.yellow('complex')} semvers (for reference):`)
     displayList(semverComplex, options)
   }
 
@@ -111,7 +111,7 @@ const displayUpdatableDependencies = (
     || semverComplex.length
 
   if (!count && !errored) {
-    print(`\nAll dependencies are up to date! ${c.green(':3')}`)
+    print.info(`\nAll dependencies are up to date! ${c.green(':3')}`)
   }
 
   if (!options.latest) {
@@ -119,7 +119,7 @@ const displayUpdatableDependencies = (
       displayList(newer, options)
     }
     if (latest.length) {
-      print(`\nOther dependencies that have ${C.latest} versions:`)
+      print.info(`\nOther dependencies that have ${C.latest} versions:`)
       displayList(latest, options)
     }
   } else {
@@ -129,15 +129,15 @@ const displayUpdatableDependencies = (
   }
 
   if (options.update) {
-    print(
+    print.info(
       `\nRun ${c.cyan('npm install')} to install the `
         + (options.latest ? C.latest : C.newer)
         + ' versions.',
     )
   } else {
-    print('')
+    print.info('')
     if (newer.length) {
-      print(
+      print.info(
         `Run ${c.cyan('npm-sc -u')}`
           + (options.filters ? ` ${c.cyan(options.filters.join(' '))}` : '')
           + (options.prerelease ? ` ${c.yellow('--pre')}` : '')
@@ -146,7 +146,7 @@ const displayUpdatableDependencies = (
       )
     }
     if (latest.length) {
-      print(
+      print.info(
         `Run ${c.cyan('npm-sc -u')}${c.magenta('l')}`
           + (options.filters ? ` ${c.cyan(options.filters.join(' '))}` : '')
           + (options.prerelease ? ` ${c.yellow('--pre')}` : '')

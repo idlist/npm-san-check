@@ -125,7 +125,7 @@ const updateDependencies = async (
   const updatableCount = updatable.length
 
   if (updatable.length && options.update) {
-    print('')
+    print.info('')
 
     let backedUp = false
     let backupName
@@ -141,7 +141,7 @@ const updateDependencies = async (
       await writeFile(`${cwd()}/${backupName}`, pkgDataBackup, { encoding: 'utf8' })
       backedUp = true
 
-      print(`A backup ${c.green(backupName)} is created in case version control is not used.`)
+      print.info(`A backup ${c.green(backupName)} is created in case version control is not used.`)
     } catch {
       options.update = false
 
@@ -157,7 +157,7 @@ const updateDependencies = async (
       try {
         await writeFile(`${cwd()}/${options.package}`, pkgData, { encoding: 'utf8' })
 
-        print(`Updates are written to ${c.green(options.package)}.`)
+        print.info(`Updates are written to ${c.green(options.package)}.`)
       } catch {
         print.error(`failed to write to ${c.green(options.package)}.`)
       }
