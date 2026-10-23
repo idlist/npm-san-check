@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsdown'
 
 export default defineConfig({
-  entry: 'lib/cli-old.ts',
+  entry: 'lib/cli.ts',
   outDir: 'bin',
   deps: {},
 })

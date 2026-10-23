@@ -63,7 +63,7 @@ export function fgHex(hex: `#${string}`) {
   return fg(hex)
 }
 
-export function declor(...pieces: DeclorPiece[]): string {
+export function declour(...pieces: DeclorPiece[]): string {
   const flattened = pieces.flat()
   let rendered: string = ''
 

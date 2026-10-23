@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { sanCheck } from '@src/index'
-import { SanCheckOptions } from '@src/types'
+import { type SanCheckOptions, type VersionProvider, versionProviders } from '@src/types'
 import minimist from 'minimist'
 import { argv, env } from 'node:process'
 
@@ -14,8 +14,15 @@ const options: SanCheckOptions = {
   checkLatest: false,
   checkPrerelease: false,
   checkTypes: new Set(['dependencies', 'devDependencies']),
-  package: 'package.json',
+  file: 'package.json',
+  provider: 'npm',
   registry: 'https://registry.npmjs.org/',
+}
+
+const possibleVersionProviders: Set<string> = new Set(versionProviders)
+
+function isVersionProvider(provider: string): provider is VersionProvider {
+  return possibleVersionProviders.has(provider)
 }
 
 if (args._.length) {
@@ -39,8 +46,15 @@ if (args['dev-deps'] === false) {
 if (args.opt) {
   options.checkTypes.add('optionalDependencies')
 }
-if (args.p || args.package) {
-  options.package = String(args.p || args.package)
+if (args.f || args.file) {
+  options.file = String(args.p || args.file)
+}
+if (args.p || args.provider) {
+  const provider: string = args.p || args.provider
+
+  if (isVersionProvider(provider)) {
+    options.provider = provider
+  }
 }
 if (args.r || args.registry) {
   options.registry = String(args.r || args.registry)

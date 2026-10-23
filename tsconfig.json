@@ -7,12 +7,19 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "moduleResolution": "bundler",
+    "allowJs": true,
+    "verbatimModuleSyntax": true,
+    "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "paths": {
       "@old/*": ["./src-old/*"],
       "@src/*": ["./src/*"],
-      "@declor/*": ["./src/color/*"]
+      "@declour/*": ["./src/declour/*"]
     }
   },
-  "include": ["src/**/*", "lib/**/*"]
+  "include": [
+    "src/**/*",
+    "lib/**/*",
+    "temp/**/*"
+  ]
 }

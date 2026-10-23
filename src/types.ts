@@ -1,4 +1,17 @@
-export type DependencyType = 'dependencies' | 'devDependencies' | 'optionalDependencies'
+export const dependencyTypes = [
+  'dependencies',
+  'devDependencies',
+  'optionalDependencies',
+] as const
+
+export type DependencyType = typeof dependencyTypes[number]
+
+export const versionProviders = [
+  'npm',
+  'jsd',
+] as const
+
+export type VersionProvider = typeof versionProviders[number]
 
 export interface SanCheckOptions {
   filters: string[]
@@ -6,6 +19,7 @@ export interface SanCheckOptions {
   checkLatest: boolean
   checkPrerelease: boolean
   checkTypes: Set<DependencyType>
-  package: string
+  file: string
+  provider: 'npm' | 'jsd'
   registry: string
 }

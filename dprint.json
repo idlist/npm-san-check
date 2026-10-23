@@ -10,7 +10,7 @@
   "excludes": [
     "**/node_modules",
     "**/*-lock.json",
-    "bin"
+    "bin/**"
   ],
   "plugins": [
     "npm:@dprint/typescript@0.96.1",

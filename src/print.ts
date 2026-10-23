@@ -1,4 +1,4 @@
-import { declor, red } from '@declor/index'
+import { declour, red } from '@declour/index'
 
 /** Distinguish terminal output from debug logging. */
 const print = {
@@ -6,7 +6,7 @@ const print = {
     console.log(...content)
   },
   error(...content: unknown[]) {
-    console.log(declor(red('Error:')), ...content)
+    console.log(declour(red('Error:')), ...content)
   },
 }
 
