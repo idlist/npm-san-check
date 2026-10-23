@@ -1,5 +1,5 @@
 import { styleText } from 'node:util'
-import { type DeclorPiece, type TextStyle } from './atoms'
+import type { DeclourPiece, TextStyle } from './atoms'
 
 export {
   black,
@@ -20,7 +20,7 @@ export {
   whiteBright,
   yellow,
   yellowBright,
-} from './atoms.js'
+} from './atoms'
 
 export {
   bgBlack,
@@ -41,7 +41,7 @@ export {
   bgWhiteBright,
   bgYellow,
   bgYellowBright,
-} from './atoms.js'
+} from './atoms'
 
 export {
   blink,
@@ -57,9 +57,12 @@ export {
   reset,
   strikethrough,
   underline,
-} from './atoms.js'
+} from './atoms'
 
-export function declour(...pieces: DeclorPiece[]): string {
+export { compose, noop } from './atoms'
+export type { DeclourAtom, DeclourPiece } from './atoms'
+
+export function declour(...pieces: DeclourPiece[]): string {
   const flattened = pieces.flat()
   let rendered: string = ''
 

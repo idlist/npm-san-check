@@ -1,1 +1,1 @@
-export { containsPrerelease, tryParseVerange } from './range'
+export { hasPrerelease as containsPrerelease, tryParseVerange } from './range'

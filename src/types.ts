@@ -1,3 +1,5 @@
+import type { SemVer } from 'verkit'
+
 export const dependencyType = [
   'dependencies',
   'devDependencies',
@@ -28,4 +30,15 @@ export interface Dependency {
   name: string
   type: DependencyType
   version: string
+}
+
+export interface CheckResult {
+  semver: 'ok' | 'invalid' | 'complex'
+  network: 'ok' | 'failed'
+  newer?: SemVer
+  latest?: SemVer
+}
+
+export interface UpdateResult {
+  updatableCount: number
 }

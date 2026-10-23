@@ -4,22 +4,24 @@ type TextStyleFormat = Parameters<typeof styleText>[0]
 
 export type TextStyle = Exclude<TextStyleFormat, unknown[]>
 
-export interface Declor {
+export interface Declour {
   text: string
   fg?: TextStyle
   bg?: TextStyle
   styles?: TextStyle[]
 }
 
-export type DeclorPiece = string | Declor | (string | Declor)[]
+export type DeclourPiece = string | Declour | (string | Declour)[]
 
-export function toDecl(piece: string | Declor) {
+export function toDecl(piece: string | Declour) {
   return typeof piece === 'string' ? { text: piece } : piece
 }
 
-export type AtomAction = (decl: Declor) => Declor
+export type DeclourAtom = (...pieces: DeclourPiece[]) => Declour[]
 
-export function atom(action: AtomAction, pieces: DeclorPiece[]): Declor[] {
+export type AtomAction = (decl: Declour) => Declour
+
+export function atom(action: AtomAction, pieces: DeclourPiece[]): Declour[] {
   return pieces.flatMap((piece) => {
     if (Array.isArray(piece)) {
       return piece.map(p => action(toDecl(p)))
@@ -29,26 +31,26 @@ export function atom(action: AtomAction, pieces: DeclorPiece[]): Declor[] {
   })
 }
 
-export function fg(color: TextStyle) {
-  return (...pieces: DeclorPiece[]) => {
+export function fg(color: TextStyle): DeclourAtom {
+  return (...pieces) => {
     return atom((piece) => {
       return { ...piece, fg: color }
     }, pieces)
   }
 }
 
-export function bg(color: TextStyle) {
-  return (...pieces: DeclorPiece[]) => {
+export function bg(color: TextStyle): DeclourAtom {
+  return (...pieces) => {
     return atom((piece) => {
       return { ...piece, bg: color }
     }, pieces)
   }
 }
 
-export function style(...styles: TextStyle[]) {
-  return (...pieces: DeclorPiece[]) => {
+export function styles(style: TextStyle): DeclourAtom {
+  return (...pieces) => {
     return atom((piece) => {
-      return { ...piece, styles: [...(piece.styles ?? []), ...styles] }
+      return { ...piece, styles: [...(piece.styles ?? []), style] }
     }, pieces)
   }
 }
@@ -91,16 +93,30 @@ export const bgWhiteBright = bg('bgWhiteBright')
 export const bgYellow = bg('bgYellow')
 export const bgYellowBright = bg('bgYellowBright')
 
-export const blink = style('blink')
-export const bold = style('bold')
-export const dim = style('dim')
-export const doubleunderline = style('doubleunderline')
-export const framed = style('framed')
-export const hidden = style('hidden')
-export const inverse = style('inverse')
-export const italic = style('italic')
-export const none = style('none')
-export const overlined = style('overlined')
-export const reset = style('reset')
-export const strikethrough = style('strikethrough')
-export const underline = style('underline')
+export const blink = styles('blink')
+export const bold = styles('bold')
+export const dim = styles('dim')
+export const doubleunderline = styles('doubleunderline')
+export const framed = styles('framed')
+export const hidden = styles('hidden')
+export const inverse = styles('inverse')
+export const italic = styles('italic')
+export const none = styles('none')
+export const overlined = styles('overlined')
+export const reset = styles('reset')
+export const strikethrough = styles('strikethrough')
+export const underline = styles('underline')
+
+export const noop: DeclourAtom = (...pieces) => {
+  return atom((piece) => piece, pieces)
+}
+
+export const compose = (...atoms: DeclourAtom[]): DeclourAtom => {
+  return (...pieces) => {
+    let applied = pieces
+    for (const apply of atoms) {
+      applied = apply(...pieces)
+    }
+    return applied as Declour[]
+  }
+}

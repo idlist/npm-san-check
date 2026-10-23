@@ -1,29 +1,11 @@
-import type { Dependency, SanCheckOptions } from '@src/types'
+import type { CheckResult, Dependency, SanCheckOptions } from '@src/types'
 import { containsPrerelease, tryParseVerange } from '@src/veranger'
 import type { Verange } from '@src/veranger/range'
+import { findMaxSatisfying, isLessThanRange, isStable, parse, type SemVerRange, sort, tryParseRange } from 'verkit'
 import { getPackageMeta, type PackageMeta } from './get-meta'
 import { createProgressBar } from './progress-bar'
 
-import {
-  findMaxSatisfying,
-  isLessThanRange,
-  isStable,
-  parse,
-  type SemVer,
-  type SemVerRange,
-  sort,
-  tryParse,
-  tryParseRange,
-} from 'verkit'
-
-export interface CheckDependencyResult {
-  semver: 'ok' | 'invalid' | 'complex'
-  network: 'ok' | 'failed'
-  newer?: SemVer
-  latest?: SemVer
-}
-
-function createResult(): CheckDependencyResult {
+function createResult(): CheckResult {
   return { semver: 'ok', network: 'ok' }
 }
 
@@ -32,7 +14,7 @@ const renewableOps = new Set(['^', '~', '>', '>='])
 async function checkDependency(
   dep: Dependency,
   options: SanCheckOptions,
-): Promise<CheckDependencyResult> {
+): Promise<CheckResult> {
   let result = createResult()
   let range: SemVerRange | null = null
   let verange: Verange | null = null
@@ -72,7 +54,7 @@ async function checkDependency(
   sort(semvers)
 
   const latest = includePrerelease
-    ? tryParse(meta.latest)
+    ? parse(meta.latest)
     : semvers[semvers.length - 1]
 
   if (
@@ -106,10 +88,10 @@ async function checkDependency(
 export async function checkDependencies(
   deps: Dependency[],
   options: SanCheckOptions,
-): Promise<Record<string, CheckDependencyResult>> {
+): Promise<Record<string, CheckResult>> {
   const bar = createProgressBar({ nOfDeps: deps.length })
   await bar.begin()
-  const results: Record<string, CheckDependencyResult> = {}
+  const results: Record<string, CheckResult> = {}
 
   for await (const dep of deps) {
     await bar.startChecking(dep.name)

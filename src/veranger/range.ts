@@ -1,4 +1,4 @@
-import { parseVerbase, type Verbase } from './base'
+import { isPrerelease, parseVerbase, type Verbase } from './base'
 
 type VerangeUnaryOp = '^' | '~' | '>' | '>=' | '<' | '<=' | '=' | ''
 
@@ -73,12 +73,12 @@ export function tryParseVerange(from: string): Verange | null {
   return null
 }
 
-export function containsPrerelease(range: Verange): boolean {
+export function hasPrerelease(range: Verange): boolean {
   switch (range.type) {
     case 'unary':
-      return range.base.prerelease != null
+      return isPrerelease(range.base)
     case 'hyphen':
-      return range.bases[0].prerelease != null || range.bases[1].prerelease != null
+      return isPrerelease(range.bases[0]) || isPrerelease(range.bases[1])
     default:
       return false
   }

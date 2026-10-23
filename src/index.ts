@@ -3,7 +3,7 @@ import fsp from 'node:fs/promises'
 import path from 'node:path'
 import { cwd, exit } from 'node:process'
 import type { PackageJson } from 'type-fest'
-import { checkDependencies, collectDependencies } from './dependency/index'
+import { checkDependencies, collectDependencies, updateDependencies } from './dependency/index'
 import print from './print'
 import type { SanCheckOptions } from './types'
 
@@ -21,6 +21,7 @@ export async function sanCheck(options: SanCheckOptions) {
   }
 
   const checked = await checkDependencies(deps, options)
+  updateDependencies(deps, checked, options)
 }
 
 async function tryGetPackageFile(file: string) {
