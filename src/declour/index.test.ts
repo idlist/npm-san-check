@@ -1,13 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
-import { bold, declour, fgHex, red } from './index'
+import { bold, declour, red } from './index'
 
 vi.stubEnv('FORCE_COLOR', '1')
-
-describe('fgHex', () => {
-  it('sets a custom foreground colour', () => {
-    expect(fgHex('#ff8800')('a')).toEqual([{ text: 'a', fg: '#ff8800' }])
-  })
-})
 
 describe('declour', () => {
   it('returns an empty string for no pieces', () => {

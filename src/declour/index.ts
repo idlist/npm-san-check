@@ -1,5 +1,5 @@
 import { styleText } from 'node:util'
-import { type DeclorPiece, fg, type TextStyle } from './atoms'
+import { type DeclorPiece, type TextStyle } from './atoms'
 
 export {
   black,
@@ -58,10 +58,6 @@ export {
   strikethrough,
   underline,
 } from './atoms.js'
-
-export function fgHex(hex: `#${string}`) {
-  return fg(hex)
-}
 
 export function declour(...pieces: DeclorPiece[]): string {
   const flattened = pieces.flat()

@@ -16,7 +16,7 @@ const options: SanCheckOptions = {
   checkTypes: new Set(['dependencies', 'devDependencies']),
   file: 'package.json',
   provider: 'npm',
-  registry: 'https://registry.npmjs.org/',
+  registry: 'https://registry.npmjs.org',
 }
 
 const possibleVersionProviders: Set<string> = new Set(versionProviders)

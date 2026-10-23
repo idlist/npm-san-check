@@ -2,27 +2,29 @@ export const wildcards = ['*', 'x', 'X'] as const
 
 export type Wildcard = typeof wildcards[number]
 
+export type NumberOrWildcard = number | Wildcard
+
 const possibleWildcards: Set<string> = new Set(wildcards)
 
 export function isWildcard(part: number | string): part is Wildcard {
   return possibleWildcards.has(part as Wildcard)
 }
 
-export function parseIntOrWildcard(raw: string): number | Wildcard {
-  return isWildcard(raw) ? raw as Wildcard : parseInt(raw)
+export function parseIntOrWildcard(raw: string): NumberOrWildcard {
+  return isWildcard(raw) ? raw : parseInt(raw)
 }
 
-export function compareWithWildcard(a: number | Wildcard, b: number | Wildcard): number {
-  const aw = isWildcard(a)
-  const bw = isWildcard(b)
+export function compareWithWildcard(a: NumberOrWildcard, b: NumberOrWildcard): number {
+  const aIsWildcard = isWildcard(a)
+  const bIsWildcard = isWildcard(b)
 
-  if (aw && bw) {
+  if (aIsWildcard && bIsWildcard) {
     return 0
-  } else if (aw) {
+  } else if (aIsWildcard) {
     return 1
-  } else if (bw) {
+  } else if (bIsWildcard) {
     return -1
   } else {
-    return a === b ? 0 : (a < b ? -1 : 1)
+    return a - b
   }
 }

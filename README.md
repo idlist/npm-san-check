@@ -1,6 +1,6 @@
 # npm-san-check
 
-> This tool is considered as a practice. Please use at your own risk.
+> This tool is considered as a practice.
 
 Yet another `package.json` update checker.
 
@@ -11,14 +11,14 @@ Yet another `package.json` update checker.
 The CLI tool is a *practice* to mimic the core (i.e., a small subset of) functionalities of `npm-check-updates` with reasonably fewer dependencies. In short:
 
 - It should only work with Node.js and npm.
-- It should only work with Node.js v18 or above as vanilla `fetch` is used.
+- It should only work with Node.js v22 or above as vanilla `fetch` is used.
 - It doesn't support workspaces.
 - It can only check local dependencies (i.e., where a `package.json` is presented).
 - It only has CLI interface.
 
 The good side is:
 
-- It has only 5 total dependencies with an installation size of ~1.5MB (where [`undici` takes 1.2MB while it shouldn't be the case](https://github.com/nodejs/node/issues/43187) and the rest being ~300KB).
+- It has 0 dependencies.
 
 ## Installation
 
@@ -88,11 +88,9 @@ npm-sc [...filters]
 
 ### Scopes
 
-`-I`, `--no-deps`: Ignore `dependencies`.
+`--no-deps`: Ignore `dependencies`.
 
-`-D`, `--no-dev-deps`: Ignore `devDependencies`.
-
-`--peer`: Check `peerDependencies`.
+`--no-dev-deps`: Ignore `devDependencies`.
 
 `--opt`: Check `optionalDependencies`.
 
@@ -102,10 +100,8 @@ npm-sc [...filters]
 
 `-r`, `--registry`: Specify the URL of the registry. Default to the `npm` registry.
 
-`--proxy`: Specify the proxy server when checking the update.
-
-- Environment variables `HTTP_PROXY` and `HTTPS_PROXY` are also considered, so it's not necessary to set this option if those variables have been set.
-
 ## License
 
-MIT © i'DLisT 2024
+[PolyForm Internal Use](https://polyformproject.org/licenses/internal-use/1.0.0) (c) i'DLisT 2024 - 2026
+
+- I mean, nobody really use this utility except myself, so it doesn't really matter, isn't it?

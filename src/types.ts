@@ -1,10 +1,10 @@
-export const dependencyTypes = [
+export const dependencyType = [
   'dependencies',
   'devDependencies',
   'optionalDependencies',
 ] as const
 
-export type DependencyType = typeof dependencyTypes[number]
+export type DependencyType = typeof dependencyType[number]
 
 export const versionProviders = [
   'npm',
@@ -22,4 +22,10 @@ export interface SanCheckOptions {
   file: string
   provider: 'npm' | 'jsd'
   registry: string
+}
+
+export interface Dependency {
+  name: string
+  type: DependencyType
+  version: string
 }
