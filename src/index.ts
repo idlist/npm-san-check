@@ -8,8 +8,9 @@ import type { Dependency, SanCheckOptions } from './types'
 
 import {
   checkDependencies,
-  checkSemver,
   collectDependencies,
+  collectNetworkIssues,
+  collectSemverIssues,
   displayUpdatePlan,
   planDependencyUpdate,
 } from './dependency/index'
@@ -32,10 +33,11 @@ export async function sanCheck(options: SanCheckOptions) {
     depsMap.set(dep.name, dep)
   }
 
-  const semverIssues = checkSemver(deps)
+  const semverIssues = collectSemverIssues(deps)
   const checkResult = await checkDependencies(deps, options)
-  const plan = planDependencyUpdate(deps, semverIssues, checkResult)
-  displayUpdatePlan(plan, depsMap, semverIssues)
+  const networkIssues = collectNetworkIssues(checkResult)
+  const plan = planDependencyUpdate(deps, checkResult, semverIssues)
+  displayUpdatePlan(plan, depsMap, semverIssues, networkIssues, options)
 }
 
 async function tryGetPackageFile(file: string) {

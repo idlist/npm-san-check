@@ -3,8 +3,8 @@ import { tryParseVerange, updateVerangeToLatest, updateVerangeToNewer } from '@s
 
 export function planDependencyUpdate(
   deps: Dependency[],
-  semverIssues: Record<string, SemVerIssue>,
   checkResult: Record<string, CheckResult>,
+  semverIssues: Record<string, SemVerIssue>,
 ): UpdatePlan {
   const plan: UpdatePlan = {
     toNewer: {},
