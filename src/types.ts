@@ -55,8 +55,10 @@ export interface NetworkOkResult {
 
 export type CheckResult = NetworkBadResult | NetworkOkResult
 
+export type UpdateRecord = Record<string, VerangeUpdatable>
+
 export interface UpdatePlan {
-  from: Record<string, VerangeUpdatable>
-  toNewer: Record<string, VerangeUpdatable>
-  toLatest: Record<string, VerangeUpdatable>
+  from: UpdateRecord
+  toNewer: UpdateRecord
+  toLatest: UpdateRecord
 }

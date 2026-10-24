@@ -14,6 +14,7 @@ import {
   displayPrompt,
   displayUpdatePlan,
   planDependencyUpdate,
+  updateDependencies,
 } from './dependency/index'
 
 export async function sanCheck(options: SanCheckOptions) {
@@ -37,10 +38,15 @@ export async function sanCheck(options: SanCheckOptions) {
   const semverIssues = collectSemverIssues(deps)
   const checkResult = await checkDependencies(deps, options)
   const networkIssues = collectNetworkIssues(checkResult)
+
   const plan = planDependencyUpdate(deps, checkResult, semverIssues)
   displayUpdatePlan(plan, depsMap, semverIssues, networkIssues, options)
-  // TODO: write file
-  displayPrompt(plan, options)
+
+  if (options.update) {
+    await updateDependencies(packageData, plan, depsMap, options)
+  } else {
+    displayPrompt(plan, options)
+  }
 }
 
 async function tryGetPackageFile(file: string) {

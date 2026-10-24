@@ -2,21 +2,18 @@ import type { CheckResult, Dependency, SanCheckOptions, UpdateTarget } from '@sr
 import { hasPrerelease, newableOps, tryParseVerange } from '@src/veranger'
 import PQueue from 'p-queue'
 import { findMaxSatisfying, isLessThanRange, isStable, parse, type SemVer, sort, tryParseRange } from 'verkit'
-import { getPackageMeta, type PackageMeta } from './get-meta'
+import { getPackageMeta } from './get-meta'
 import { createProgressBar } from './progress-bar'
 
 async function checkDependency(
   dep: Dependency,
   options: SanCheckOptions,
 ): Promise<CheckResult> {
-  let meta: PackageMeta | null = null
-
-  const getMetaResult = await getPackageMeta(dep.name, options)
-  if (typeof getMetaResult === 'string') {
-    return { network: getMetaResult }
+  const meta = await getPackageMeta(dep.name, options)
+  if (typeof meta === 'string') {
+    return { network: meta }
   }
 
-  meta = getMetaResult
   const range = tryParseRange(dep.range)
   const verange = tryParseVerange(dep.range)
 
@@ -32,8 +29,8 @@ async function checkDependency(
   const sorted = sort(semvers)
 
   const latest = includePrerelease
-    ? parse(meta.latest)
-    : sorted[sorted.length - 1]
+    ? sorted[sorted.length - 1]
+    : parse(meta.latest)
 
   let newer: SemVer | null = null
 
