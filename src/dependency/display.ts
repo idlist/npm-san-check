@@ -1,7 +1,7 @@
-import { blue, cyan, type DeclourPiece, green, magenta, red, yellow } from '@src/declour'
+import { blue, cyan, type DeclourPiece, green, red, yellow } from '@src/declour'
 import print from '@src/print'
 import type { Dependency, DependencyType, NetworkIssue, SanCheckOptions, SemVerIssue, UpdatePlan } from '@src/types'
-import { interpose } from '@src/utils'
+import { interpose, Latest, Name, Newer } from '@src/utils'
 import { colorizeVerangeDiff, formatVerange } from '@src/veranger'
 
 function head(type: DependencyType): DeclourPiece[] {
@@ -14,10 +14,6 @@ function head(type: DependencyType): DeclourPiece[] {
       return cyan('o')
   }
 }
-
-const Name: DeclourPiece[] = [cyan('n'), 'ame']
-const Newer: DeclourPiece[] = [green('n'), 'ewer']
-const Latest: DeclourPiece[] = [magenta('l'), 'atest']
 
 const titles = ['name', 'current', 'newer', 'latest'] as const
 type Title = typeof titles[number]
@@ -273,7 +269,7 @@ function displayListsWithSemverIssue(
   }
 
   if (byIssue.complex.length > 0) {
-    print.di('\nPackage(s) having ', yellow('complex'), ' semvers (for reference):')
+    print.di('\nPackage(s) having ', yellow('complex'), ' semvers (for you to take care):')
     displayList(byIssue.complex, plan, depsMap, size, { showNewer: false })
   }
 }

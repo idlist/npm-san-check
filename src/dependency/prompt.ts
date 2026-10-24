@@ -1,23 +1,9 @@
 import { cyan, type DeclourPiece, green, magenta, yellow } from '@src/declour'
 import print from '@src/print'
 import type { SanCheckOptions, UpdatePlan } from '@src/types'
-
-const Newer: DeclourPiece[] = [green('n'), 'ewer']
-const Latest: DeclourPiece[] = [magenta('l'), 'atest']
+import { Latest, Newer } from '@src/utils'
 
 export function displayPrompt(plan: UpdatePlan, options: SanCheckOptions) {
-  if (options.update) {
-    print.di(
-      '\nRun ',
-      cyan('npm install'),
-      ' to install the ',
-      ...(options.checkLatest ? Latest : Newer),
-      ' versions.',
-    )
-
-    return
-  }
-
   let promptNewer = false
   let promptLatest = false
 
@@ -36,7 +22,7 @@ export function displayPrompt(plan: UpdatePlan, options: SanCheckOptions) {
       'Run ',
       cyan('npm-sc -u'),
       ...filterOptions(options),
-      ' to update ',
+      ' to update the packages in ',
       green(options.file),
       ' to the ',
       ...Newer,
@@ -49,7 +35,7 @@ export function displayPrompt(plan: UpdatePlan, options: SanCheckOptions) {
       cyan('npm-sc -u'),
       magenta('l'),
       ...filterOptions(options),
-      ' to update ',
+      ' to update the packages in ',
       green(options.file),
       ' to the ',
       ...Latest,
