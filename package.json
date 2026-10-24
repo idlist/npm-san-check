@@ -1,6 +1,6 @@
 {
   "name": "npm-san-check",
-  "version": "0.2.8",
+  "version": "1.0.0",
   "description": "Simple npm update checker with fewer dependency and fewer features.",
   "keywords": [
     "npm",
@@ -22,8 +22,8 @@
   "type": "module",
   "main": "bin/cli.js",
   "bin": {
-    "npm-san-check": "bin/cli-old.js",
-    "npm-sc": "bin/cli-old.js"
+    "npm-san-check": "bin/cli.js",
+    "npm-sc": "bin/cli.js"
   },
   "files": [
     "bin"

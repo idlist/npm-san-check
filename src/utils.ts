@@ -1,4 +1,4 @@
-import { cyan, green, magenta, type DeclourPiece } from '@src/declour'
+import { cyan, type DeclourPiece, green, magenta } from '@src/declour'
 
 export function justCompare<T extends string | number>(a: T, b: T) {
   if (a < b) return -1
