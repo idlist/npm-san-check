@@ -6,13 +6,13 @@ const print = {
     console.log(...content)
   },
   e(...content: unknown[]) {
-    console.log(declour(red('Error: ')), ...content)
+    console.error(declour(red('Error: ')), ...content)
   },
   di(...content: DeclourPiece[]) {
     console.log(declour(...content))
   },
   de(...content: DeclourPiece[]) {
-    console.log(declour(red('Error: '), ...content))
+    console.error(declour(red('Error: '), ...content))
   },
 }
 

@@ -23,11 +23,11 @@ export async function updateDependencies(
 
   let backupName: string
 
-  const separator = options.file.lastIndexOf('.')
-  if (separator < 0) {
+  const sepIndex = options.file.lastIndexOf('.')
+  if (sepIndex < 0) {
     backupName = `${options.file}.sc.json`
   } else {
-    backupName = `${options.file.slice(0, separator)}.sc.${options.file.slice(separator + 1)}`
+    backupName = `${options.file.slice(0, sepIndex)}.sc.${options.file.slice(sepIndex + 1)}`
   }
 
   try {

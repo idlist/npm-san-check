@@ -94,7 +94,7 @@ function getColumnSize(
 
     stats.name = Math.max(stats.name, name.length)
 
-    const from = plan.from[stats.name]
+    const from = plan.from[name]
     const current = from ? formatVerange(from) : dep.rangeClean
     stats.current = Math.max(stats.current, current.length)
 
@@ -110,7 +110,7 @@ function getColumnSize(
 
     stats.name = Math.max(stats.name, name.length)
 
-    const from = plan.from[stats.name]
+    const from = plan.from[name]
     const current = from ? formatVerange(from) : dep.rangeClean
     stats.current = Math.max(stats.current, current.length)
 

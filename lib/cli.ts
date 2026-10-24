@@ -47,7 +47,7 @@ if (args.opt) {
   options.checkTypes.add('optionalDependencies')
 }
 if (args.f || args.file) {
-  options.file = String(args.p || args.file)
+  options.file = String(args.f || args.file)
 }
 if (args.p || args.provider) {
   const provider: string = args.p || args.provider

@@ -1,14 +1,12 @@
 # npm-san-check
 
-> This tool is considered as a practice.
-
 Yet another `package.json` update checker.
 
-*Why another?* Because I really liked [`npm-check-updates`](https://github.com/raineorshine/npm-check-updates), but its shorter command `ncu` conflicts with NVIDIA's [Nsight Compute CLI](https://developer.nvidia.com/nsight-compute), and it has 334 dependencies in total.
+*Why another?* I really liked [`npm-check-updates`](https://github.com/raineorshine/npm-check-updates), but its shorter command `ncu` conflicts with NVIDIA's [Nsight Compute CLI](https://developer.nvidia.com/nsight-compute), and it (used to) have 334 dependencies in total.
 
 ## Introduction
 
-The CLI tool is a *practice* to mimic the core (i.e., a small subset of) functionalities of `npm-check-updates` with reasonably fewer dependencies. In short:
+The CLI tool starts as a *practice* to mimic the core (i.e., a small subset of) functionalities of `npm-check-updates` with reasonably fewer dependencies. In short:
 
 - It should only work with Node.js and npm.
 - It should only work with Node.js v22 or above as vanilla `fetch` is used.
@@ -18,7 +16,9 @@ The CLI tool is a *practice* to mimic the core (i.e., a small subset of) functio
 
 The good side is:
 
-- It has 0 dependencies. Dependencies are bundled with sensible choice and sizes.
+- It has 0 dependencies to install. Dependencies are bundled with sensible choice and sizes, and the bundled script is around 100KB.
+
+I've been using the tool myself for more than 2 years, and it kind of works. Now I've decided to give it some love by refactoring it... well, hope it doesn't break.
 
 ## Installation
 
@@ -37,13 +37,13 @@ npx npm-san-check
 
 By default, the tool would check `dependencies` and `devDependencies`, as those dependencies are mostly safe to update.
 
-Generally, updating `peerDependencies` and `optionalDependencies` should be done manually, as they require careful treatment and wrong dependency versions would cause the whole package unable to be installed or used. You can still check and update the version using this tool, though not recommended.
+Generally, updating `peerDependencies` and `optionalDependencies` should be done manually, as they require careful treatment. One wrong dependency version in those two fields may cause the whole package unable to be installed. You can still check `optionalDependencies` with this tool.
 
 ### "Newer"
 
-The tool would try to update the dependencies to *the newer versions that fit the semantic*:
+The tool will try to update the dependencies to *the newer version that fits in the semantic*:
 
-- Unary ranges having "larger than" semantics (`^`, `~`, `>`, `>=`) are updated to the newest versions that satisfies them, with the *range symbol* kept.
+- Unary ranges having "larger than" semantics (`^`, `~`, `>`, `>=`) are updated to the newest versions that satisfy them, with the *range symbol* kept.
 - Wildcards (`*`, `x`, `X`) are preserved.
 - Other ranges, as well as hyphen ranges (`-`) and compound ranges (`||`), are ignored.
 
@@ -51,7 +51,7 @@ This is the default strategy of the tool.
 
 ### "Latest"
 
-The tool would update the dependencies to *the latest versions* with the *policies* kept.
+The tool will update the dependencies to *the latest versions* with the *policies* kept.
 
 - Unary ranges (`^`, `~`, `<`, `<=`, `>`, `>=`, `=` or omitted) are updated to the latest versions with the *range symbols* kept.
 - For hyphen ranges (`-`), the right side is updated to the newest version.
@@ -65,28 +65,24 @@ This is the strategy similar (but not equal) to the one `npm-check-updates` uses
 ```
 npm-sc [...filters]
        [-u | --update] [-l | --latest] [--pre | --prerelease]
-       [-I | --no-deps] [-D | --no-dev-deps] [--peer] [--opt]
-       [-p | --package] [-r | --registry] [--proxy]
+       [--no-deps] [--no-dev-deps] [--opt]
+       [-f | --file] [-p | --provider] [-r | --registry]
 ```
-
-### Behaviors
 
 `filters`: Packages to be updated.
 
 - Supports `*` for glob matching (e.g., `*eslint*` matches every packages that have `eslint` in their name, like `@eslint/js` or `@typescript-eslint/parser`).
 - Words are combined by **OR** logic.
 
-`-u`, `--update`: Overwrite `package.json` with the updated dependencies.
+`-u`, `--update`: Write in `package.json` with the updated dependencies.
 
-- In case version control is not used or the tool has done something bad, a back-up file (usually `package.sc.json`) is created before updating.
+- In case something bad happens, a back-up file (usually `package.sc.json`) will be created before updating.
 
-`-l`, `--latest`: Let the updater to use the "latest" updating strategy instead of "newer", which might be more possible to include breaking changes.
+`-l`, `--latest`: Let the updater to use the "latest" updating strategy instead of "newer", which usually guarantees breaking changes.
 
-`--pre`, `--prerelease`: Include prerelease versions.
+`--pre`, `--prerelease`: Check prerelease versions.
 
-- By default, prerelease versions are excluded from update targets, unless the package version itself is already a prerelease.
-
-### Scopes
+- By default, prerelease versions are excluded from update targets, unless the package version itself is already a prerelease version.
 
 `--no-deps`: Ignore `dependencies`.
 
@@ -94,14 +90,14 @@ npm-sc [...filters]
 
 `--opt`: Check `optionalDependencies`.
 
-### Environmental Settings
+`-f`, `--file`: The location of the package file, relative to current working directory. Default to `package.json`.
 
-`-p`, `--package`: Specify the location of the package file, relative to current working directory. Default to `package.json`.
+`-p`, `--provider`: From where the tool get the versions of the packages. Can be set to `npm` (from `npm`) or `jsd` (from jsDelivr).
 
-`-r`, `--registry`: Specify the URL of the registry. Default to the `npm` registry.
+`-r`, `--registry`: The URL of the registry. Default to the `npm` registry.
 
 ## License
 
 [PolyForm Internal Use](https://polyformproject.org/licenses/internal-use/1.0.0) (c) i'DLisT 2024 - 2026
 
-- I mean, nobody really use this utility except myself, so it doesn't really matter, isn't it?
+- I mean, nobody really uses this utility except myself, so it doesn't really matter, does it?
