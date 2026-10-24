@@ -50,7 +50,7 @@ async function getMetaFromNpm(
   }
 
   if (json == null) return 'failed'
-  if (!('dist-tag' in json) || !('version' in json)) return 'invalid'
+  if (!('dist-tags' in json) || !('versions' in json)) return 'invalid'
 
   const meta = json as PartialNpmMeta
   const latest = meta['dist-tags'].latest
@@ -79,13 +79,13 @@ async function getMetaFromJsDelivr(
     const response = await fetch(url, {
       method: 'GET',
     })
-    json = response.json()
+    json = await response.json()
   } catch {
     return 'failed'
   }
 
   if (json == null) return 'failed'
-  if (!('tag' in json) || !('version' in json)) return 'invalid'
+  if (!('tags' in json) || !('versions' in json)) return 'invalid'
 
   const meta = json as PartialJsDelivrMeta
   const latest = meta.tags.latest

@@ -6,7 +6,7 @@ import type { PackageJson } from 'type-fest'
 import print from './print'
 import type { Dependency, SanCheckOptions } from './types'
 
-import { checkDependencies, checkSemver, collectDependencies } from './dependency/index'
+import { checkDependencies, checkSemver, collectDependencies, planDependencyUpdate } from './dependency/index'
 
 export async function sanCheck(options: SanCheckOptions) {
   const packageData = await tryGetPackageFile(options.file)
@@ -28,6 +28,8 @@ export async function sanCheck(options: SanCheckOptions) {
 
   const semverIssues = checkSemver(deps)
   const checkResult = await checkDependencies(deps, options)
+  const plan = planDependencyUpdate(deps, semverIssues, checkResult)
+  console.log(plan)
 }
 
 async function tryGetPackageFile(file: string) {

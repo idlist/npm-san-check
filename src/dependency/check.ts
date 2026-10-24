@@ -29,19 +29,16 @@ async function checkDependency(
     .map((v) => parse(v))
     .filter((v) => includePrerelease || (isStable(v) ?? false))
 
-  sort(semvers)
+  const sorted = sort(semvers)
 
   const latest = includePrerelease
     ? parse(meta.latest)
-    : semvers[semvers.length - 1]
+    : sorted[sorted.length - 1]
 
   let newer: SemVer | null = null
 
   if (verange?.type === 'unary' && newableOps.has(verange.op)) {
-    newer = findMaxSatisfying(semvers, dep.version, {
-      loose: true,
-      includePrerelease,
-    })
+    newer = findMaxSatisfying(sorted, dep.version, { includePrerelease })
 
     // Possible downgrade of dependency (due to deprecation or unpublishing).
     if (newer == null && range != null && isLessThanRange(latest, range)) {

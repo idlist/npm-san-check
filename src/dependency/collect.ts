@@ -26,7 +26,12 @@ export function collectDependencies(packageJson: PackageJson, options: SanCheckO
 
     for (const [name, version] of entries) {
       if (!isFilterMatched(name)) continue
-      deps.push({ name, type, version })
+      deps.push({
+        name,
+        type,
+        version,
+        versionClean: version.replace(/(?<!-) (?![-=<>])/g, ''),
+      })
     }
   }
 

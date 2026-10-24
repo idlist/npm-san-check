@@ -25,7 +25,11 @@ export interface VerangeCompound {
   type: 'compound'
 }
 
-export type Verange = VerangeUnary | VerangeMultiple | VerangeHyphen | VerangeCompound
+export type Verange =
+  | VerangeUnary
+  | VerangeMultiple
+  | VerangeHyphen
+  | VerangeCompound
 
 const ops2char = new Set(['>=', '<='])
 const ops1char = new Set(['^', '~', '>', '<', '='])
@@ -141,7 +145,10 @@ export function updateVerangeToNewer(
   }
 }
 
-function updateUnaryVerangeToLatest(unary: VerangeUnary, target: SemVer): VerangeUnary | null {
+function updateUnaryVerangeToLatest(
+  unary: VerangeUnary,
+  target: SemVer,
+): VerangeUnary | null {
   const base = updateVerbase(unary.base, target)
   if (base == null) return null
 

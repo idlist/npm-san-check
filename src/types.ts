@@ -1,3 +1,4 @@
+import type { Verange } from '@src/veranger'
 import type { SemVer } from 'verkit'
 
 export const dependencyType = [
@@ -30,6 +31,7 @@ export interface Dependency {
   name: string
   type: DependencyType
   version: string
+  versionClean: string
 }
 
 export type SemVerIssue = 'invalid' | 'complex'
@@ -51,3 +53,8 @@ export interface NetworkOkResult {
 }
 
 export type CheckResult = NetworkBadResult | NetworkOkResult
+
+export interface UpdatePlan {
+  toNewer: Record<string, Verange>
+  toLatest: Record<string, Verange>
+}
