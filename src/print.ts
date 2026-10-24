@@ -1,4 +1,4 @@
-import { declour, red } from '@declour/index'
+import { declour, red } from '@src/declour'
 
 /** Distinguish terminal output from debug logging. */
 const print = {

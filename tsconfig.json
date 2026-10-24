@@ -13,8 +13,7 @@
     "noEmit": true,
     "paths": {
       "@old/*": ["./src-old/*"],
-      "@src/*": ["./src/*"],
-      "@declour/*": ["./src/declour/*"]
+      "@src/*": ["./src/*"]
     }
   },
   "include": [

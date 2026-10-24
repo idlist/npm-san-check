@@ -1,4 +1,4 @@
-import type { SanCheckOptions } from '@src/types'
+import type { NetworkIssue, SanCheckOptions } from '@src/types'
 import normalizeUrl from 'normalize-url'
 
 export interface PackageMeta {
@@ -9,14 +9,14 @@ export interface PackageMeta {
 export async function getPackageMeta(
   name: string,
   options: SanCheckOptions,
-): Promise<PackageMeta | null> {
+): Promise<PackageMeta | NetworkIssue> {
   if (options.provider === 'npm') {
     return await getMetaFromNpm(name, options)
   }
   if (options.provider === 'jsd') {
     return await getMetaFromJsDelivr(name)
   }
-  return null
+  return 'no-provider'
 }
 
 interface PartialNpmMeta {
@@ -33,19 +33,29 @@ interface PartialNpmMeta {
 async function getMetaFromNpm(
   name: string,
   options: SanCheckOptions,
-): Promise<PackageMeta> {
+): Promise<PackageMeta | NetworkIssue> {
   const url = normalizeUrl(`${options.registry}/${name}`)
-  const response = await fetch(url, {
-    method: 'GET',
-    headers: {
-      Accept: 'application/vnd.npm.install-v1+json',
-    },
-  })
+  let json: any = null
 
-  const json = await response.json() as PartialNpmMeta
-  const latest = json['dist-tags'].latest
-  const versions = Object.keys(json.versions)
-    .filter((key) => !json.versions[key].deprecated)
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/vnd.npm.install-v1+json',
+      },
+    })
+    json = await response.json()
+  } catch {
+    return 'failed'
+  }
+
+  if (json == null) return 'failed'
+  if (!('dist-tag' in json) || !('version' in json)) return 'invalid'
+
+  const meta = json as PartialNpmMeta
+  const latest = meta['dist-tags'].latest
+  const versions = Object.keys(meta.versions)
+    .filter((key) => !meta.versions[key].deprecated)
 
   return { latest, versions }
 }
@@ -61,15 +71,25 @@ const jsDelivrEndpoint = `https://data.jsdelivr.com/v1/package/npm`
 
 async function getMetaFromJsDelivr(
   name: string,
-): Promise<PackageMeta> {
+): Promise<PackageMeta | NetworkIssue> {
   const url = normalizeUrl(`${jsDelivrEndpoint}/${name}`)
-  const response = await fetch(url, {
-    method: 'GET',
-  })
+  let json: any = null
 
-  const json = await response.json() as PartialJsDelivrMeta
-  const latest = json.tags.latest
-  const versions = json.versions
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+    })
+    json = response.json()
+  } catch {
+    return 'failed'
+  }
+
+  if (json == null) return 'failed'
+  if (!('tag' in json) || !('version' in json)) return 'invalid'
+
+  const meta = json as PartialJsDelivrMeta
+  const latest = meta.tags.latest
+  const versions = meta.versions
 
   return { latest, versions }
 }

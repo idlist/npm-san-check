@@ -1,4 +1,4 @@
-import { cyan, declour, green } from '@declour/index'
+import { cyan, declour, green } from '@src/declour'
 import { clamp, remove } from 'es-toolkit'
 import { stdout as output } from 'node:process'
 import { Readline } from 'node:readline/promises'
@@ -35,7 +35,7 @@ export function createProgressBar(options: ProgressBarOptions) {
 
     const more = done
       ? ['  ', green('done!')]
-      : ['  → ', cyan(checking.join(','))]
+      : ['  → ', cyan(checking.join(', '))]
 
     return declour(
       '[',

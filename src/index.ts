@@ -3,9 +3,10 @@ import fsp from 'node:fs/promises'
 import path from 'node:path'
 import { cwd, exit } from 'node:process'
 import type { PackageJson } from 'type-fest'
-import { checkDependencies, collectDependencies, updateDependencies } from './dependency/index'
 import print from './print'
-import type { SanCheckOptions } from './types'
+import type { Dependency, SanCheckOptions } from './types'
+
+import { checkDependencies, checkSemver, collectDependencies } from './dependency/index'
 
 export async function sanCheck(options: SanCheckOptions) {
   const packageData = await tryGetPackageFile(options.file)
@@ -20,8 +21,13 @@ export async function sanCheck(options: SanCheckOptions) {
     return
   }
 
-  const checked = await checkDependencies(deps, options)
-  updateDependencies(deps, checked, options)
+  const depsMap = new Map<string, Dependency>()
+  for (const dep of deps) {
+    depsMap.set(dep.name, dep)
+  }
+
+  const semverIssues = checkSemver(deps)
+  const checkResult = await checkDependencies(deps, options)
 }
 
 async function tryGetPackageFile(file: string) {

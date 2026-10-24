@@ -6,4 +6,10 @@ export default defineConfig({
   deps: {
     onlyBundle: false, // Bundle everything.
   },
+  outputOptions: {
+    comments: {
+      annotation: false,
+      jsdoc: false,
+    },
+  },
 })

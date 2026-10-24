@@ -6,7 +6,7 @@ interface PrereleaseCompareResult {
   differFromIndex: number
 }
 
-export function comparePrereleases(
+export function comparePrerelease(
   a: PrereleaseIdentifier[],
   b: PrereleaseIdentifier[],
 ): PrereleaseCompareResult {

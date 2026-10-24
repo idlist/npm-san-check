@@ -1,49 +1,27 @@
-import type { CheckResult, Dependency, SanCheckOptions } from '@src/types'
-import { containsPrerelease, tryParseVerange } from '@src/veranger'
-import type { Verange } from '@src/veranger/range'
-import { findMaxSatisfying, isLessThanRange, isStable, parse, type SemVerRange, sort, tryParseRange } from 'verkit'
+import type { CheckResult, Dependency, SanCheckOptions, UpdateTarget } from '@src/types'
+import { hasPrerelease, newableOps, tryParseVerange } from '@src/veranger'
+import PQueue from 'p-queue'
+import { findMaxSatisfying, isLessThanRange, isStable, parse, type SemVer, sort, tryParseRange } from 'verkit'
 import { getPackageMeta, type PackageMeta } from './get-meta'
 import { createProgressBar } from './progress-bar'
-
-function createResult(): CheckResult {
-  return { semver: 'ok', network: 'ok' }
-}
-
-const renewableOps = new Set(['^', '~', '>', '>='])
 
 async function checkDependency(
   dep: Dependency,
   options: SanCheckOptions,
 ): Promise<CheckResult> {
-  let result = createResult()
-  let range: SemVerRange | null = null
-  let verange: Verange | null = null
-
-  range = tryParseRange(dep.version, { loose: true })
-  if (range == null) {
-    result.semver = 'invalid'
-  } else {
-    verange = tryParseVerange(dep.version)
-    if (verange?.type === 'compound') {
-      result.semver = 'complex'
-    }
-  }
-
   let meta: PackageMeta | null = null
 
-  try {
-    meta = await getPackageMeta(dep.name, options)
-    if (meta == null) {
-      result.network = 'failed'
-      return result
-    }
-  } catch {
-    result.network = 'failed'
-    return result
+  const getMetaResult = await getPackageMeta(dep.name, options)
+  if (typeof getMetaResult === 'string') {
+    return { network: getMetaResult }
   }
 
+  meta = getMetaResult
+  const range = tryParseRange(dep.version)
+  const verange = tryParseVerange(dep.version)
+
   let includePrerelease = options.checkPrerelease
-  if (verange != null && containsPrerelease(verange)) {
+  if (verange != null && hasPrerelease(verange)) {
     includePrerelease = true
   }
 
@@ -57,51 +35,52 @@ async function checkDependency(
     ? parse(meta.latest)
     : semvers[semvers.length - 1]
 
-  if (
-    result.semver === 'ok'
-    && verange?.type === 'unary'
-    && renewableOps.has(verange.op)
-  ) {
-    let newer = findMaxSatisfying(semvers, dep.version, {
+  let newer: SemVer | null = null
+
+  if (verange?.type === 'unary' && newableOps.has(verange.op)) {
+    newer = findMaxSatisfying(semvers, dep.version, {
       loose: true,
       includePrerelease,
     })
 
     // Possible downgrade of dependency (due to deprecation or unpublishing).
-    if (
-      newer == null
-      && latest != null
-      && range != null
-      && isLessThanRange(latest, range)
-    ) {
+    if (newer == null && range != null && isLessThanRange(latest, range)) {
       newer = latest
-    }
-
-    if (newer != null) {
-      result.newer = newer
     }
   }
 
-  return result
+  const target: UpdateTarget = { latest }
+  if (newer != null) target.newer = newer
+
+  return { network: 'ok', target }
 }
 
 export async function checkDependencies(
   deps: Dependency[],
   options: SanCheckOptions,
 ): Promise<Record<string, CheckResult>> {
+  const queue = new PQueue({
+    concurrency: 5,
+    interval: 100,
+    intervalCap: 1,
+  })
+
   const bar = createProgressBar({ nOfDeps: deps.length })
   await bar.begin()
   const results: Record<string, CheckResult> = {}
 
-  for await (const dep of deps) {
-    await bar.startChecking(dep.name)
+  for (const dep of deps) {
+    queue.add(async () => {
+      await bar.startChecking(dep.name)
 
-    const result = await checkDependency(dep, options)
-    results[dep.name] = result
+      const result = await checkDependency(dep, options)
+      results[dep.name] = result
 
-    await bar.finishChecking(dep.name)
+      await bar.finishChecking(dep.name)
+    })
   }
 
+  await queue.onIdle()
   await bar.done()
   return results
 }

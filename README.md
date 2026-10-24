@@ -18,7 +18,7 @@ The CLI tool is a *practice* to mimic the core (i.e., a small subset of) functio
 
 The good side is:
 
-- It has 0 dependencies.
+- It has 0 dependencies. Dependencies are bundled with sensible choice and sizes.
 
 ## Installation
 

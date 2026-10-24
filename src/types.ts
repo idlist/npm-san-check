@@ -32,13 +32,22 @@ export interface Dependency {
   version: string
 }
 
-export interface CheckResult {
-  semver: 'ok' | 'invalid' | 'complex'
-  network: 'ok' | 'failed'
+export type SemVerIssue = 'invalid' | 'complex'
+
+export type NetworkIssue = 'no-provider' | 'failed' | 'invalid'
+
+export interface UpdateTarget {
+  latest: SemVer
   newer?: SemVer
-  latest?: SemVer
 }
 
-export interface UpdateResult {
-  updatableCount: number
+export interface NetworkBadResult {
+  network: NetworkIssue
 }
+
+export interface NetworkOkResult {
+  network: 'ok'
+  target: UpdateTarget
+}
+
+export type CheckResult = NetworkBadResult | NetworkOkResult

@@ -1,6 +1,6 @@
 import type { SetRequired } from 'type-fest'
 import type { PrereleaseIdentifier, SemVer } from 'verkit'
-import { comparePrereleases } from './utils'
+import { comparePrerelease } from './utils'
 import { isWildcard, type NumberOrWildcard, parseIntOrWildcard } from './wildcard'
 
 import {
@@ -14,7 +14,7 @@ import {
   noop,
   red,
   yellow,
-} from '@declour/index'
+} from '@src/declour'
 
 export interface Verbase {
   major: NumberOrWildcard
@@ -68,47 +68,6 @@ export function isPrerelease(
   return base.prerelease != null && base.prerelease.length > 0
 }
 
-type SemVerPart = 'major' | 'minor' | 'patch' | 'prerelease'
-
-const applyForMinor = new Set(['major', 'minor'])
-const applyForPatch = new Set(['major', 'minor', 'patch'])
-
-export function mimicVerbase(
-  source: Verbase,
-  target: SemVer,
-  from: SemVerPart,
-) {
-  const mimicked: Verbase = structuredClone(source)
-
-  if (from === 'major' && !isWildcard(mimicked.major)) {
-    mimicked.major = target.major
-  }
-
-  if (
-    applyForMinor.has(from)
-    && mimicked.minor != null
-    && !isWildcard(mimicked.minor)
-  ) {
-    mimicked.minor = target.minor
-  }
-
-  if (
-    applyForPatch.has(from)
-    && mimicked.patch != null
-    && !isWildcard(mimicked.patch)
-  ) {
-    mimicked.patch = target.patch
-  }
-
-  if (isPrerelease(target)) {
-    mimicked.prerelease = [...target.prerelease]
-  } else {
-    delete mimicked.prerelease
-  }
-
-  return mimicked
-}
-
 export function formatVerbase(base: Verbase) {
   const { major, minor, patch, prerelease, build } = base
   let formatted = String(major)
@@ -121,28 +80,108 @@ export function formatVerbase(base: Verbase) {
   return formatted
 }
 
+type SemVerPart = 'major' | 'minor' | 'patch' | 'prerelease'
+
+const affectsMinor = new Set(['major', 'minor'])
+const affectsPatch = new Set(['major', 'minor', 'patch'])
+
+function alignVerbase(source: Verbase, target: SemVer, from: SemVerPart) {
+  const aligned: Verbase = structuredClone(source)
+
+  if (from === 'major' && !isWildcard(aligned.major)) {
+    aligned.major = target.major
+  }
+
+  if (
+    affectsMinor.has(from)
+    && aligned.minor != null
+    && !isWildcard(aligned.minor)
+  ) {
+    aligned.minor = target.minor
+  }
+
+  if (
+    affectsPatch.has(from)
+    && aligned.patch != null
+    && !isWildcard(aligned.patch)
+  ) {
+    aligned.patch = target.patch
+  }
+
+  if (isPrerelease(target)) {
+    aligned.prerelease = [...target.prerelease]
+  } else {
+    delete aligned.prerelease
+  }
+
+  return aligned
+}
+
+function tryUpdateMajor(source: Verbase, target: SemVer): Verbase | null {
+  if (isWildcard(source.major)) return null
+  if (source.major === target.major) return null
+  return alignVerbase(source, target, 'major')
+}
+
+function tryUpdateMinor(source: Verbase, target: SemVer): Verbase | null {
+  if (source.minor == null) return null
+  if (isWildcard(source.minor)) return null
+  if (source.minor === target.minor) return null
+  return alignVerbase(source, target, 'minor')
+}
+
+function tryUpdatePatch(source: Verbase, target: SemVer): Verbase | null {
+  if (source.patch == null) return null
+  if (isWildcard(source.patch)) return null
+  if (source.patch === target.patch) return null
+  return alignVerbase(source, target, 'patch')
+}
+
+function tryUpdatePrerelease(source: Verbase, target: SemVer): Verbase | null {
+  if (!isPrerelease(source) || !isPrerelease(target)) return null
+  const compared = comparePrerelease(source.prerelease, target.prerelease)
+  if (compared.result === 0) return null
+  return alignVerbase(source, target, 'prerelease')
+}
+
+export function updateVerbase(source: Verbase, target: SemVer): Verbase | null {
+  const majorMaybeUpdated = tryUpdateMajor(source, target)
+  if (majorMaybeUpdated) return majorMaybeUpdated
+
+  const minorMaybeUpdated = tryUpdateMinor(source, target)
+  if (minorMaybeUpdated) return minorMaybeUpdated
+
+  const patchMaybeUpdated = tryUpdatePatch(source, target)
+  if (patchMaybeUpdated) return patchMaybeUpdated
+
+  const prereleaseMaybeUpdated = tryUpdatePrerelease(source, target)
+  if (prereleaseMaybeUpdated) return prereleaseMaybeUpdated
+
+  return null
+}
+
 interface ColorizeOptions {
   base: Verbase
   color: DeclourAtom
-  fromPart: SemVerPart
+  from: SemVerPart
   fromPreIndex?: number
 }
 
-export function colorizeVerbase(options: ColorizeOptions): DeclourPiece[] {
-  const { base, color, fromPart, fromPreIndex } = options
-  const decloured: DeclourPiece[] = []
+function colorizeVerbase(options: ColorizeOptions): DeclourPiece[] {
+  const { base, color, from, fromPreIndex } = options
+  const declour: DeclourPiece[] = []
 
-  const majorColor = fromPart === 'major' ? color : noop
-  decloured.push(majorColor(String(base.major)))
+  const majorColor = from === 'major' ? color : noop
+  declour.push(majorColor(String(base.major)))
 
   if (base.minor != null) {
-    const minorColor = applyForMinor.has(fromPart) ? color : noop
-    decloured.push(minorColor('.', String(base.minor)))
+    const minorColor = affectsMinor.has(from) ? color : noop
+    declour.push(minorColor('.', String(base.minor)))
   }
 
   if (base.patch != null) {
-    const patchColor = applyForPatch.has(fromPart) ? color : noop
-    decloured.push(patchColor('.', String(base.patch)))
+    const patchColor = affectsPatch.has(from) ? color : noop
+    declour.push(patchColor('.', String(base.patch)))
   }
 
   if (base.prerelease != null) {
@@ -150,132 +189,100 @@ export function colorizeVerbase(options: ColorizeOptions): DeclourPiece[] {
     const index = fromPreIndex ?? 0
     const same = base.prerelease.slice(0, index).join('.')
     const diff = base.prerelease.slice(index).join('.')
-    const preColor = fromPart !== 'prerelease' ? color : noop
+    const preColor = from !== 'prerelease' ? color : noop
 
-    if (same.length > 0) decloured.push(preColor(same))
-    if (same.length > 0 && diff.length > 0) decloured.push(preColor('.'))
-    if (diff.length > 0) decloured.push(color(diff))
+    declour.push(preColor('-'))
+    if (same.length > 0) declour.push(preColor(same))
+    if (same.length > 0 && diff.length > 0) declour.push(preColor('.'))
+    if (diff.length > 0) declour.push(color(diff))
   }
 
-  return decloured
+  return declour
 }
 
-interface AlignResult {
-  needAlign: boolean
-  aligned: string
-  decloured: DeclourPiece[]
-}
-
-function createUnchangedResult(base: Verbase): AlignResult {
-  const formatted = formatVerbase(base)
-
-  return {
-    needAlign: false,
-    aligned: formatted,
-    decloured: [formatted],
+export function colorizeVerbaseDiff(base: Verbase, ref: SemVer): DeclourPiece[] {
+  if (isWildcard(base.major)) {
+    return [formatVerbase(base)]
   }
-}
-
-function createAlignedResult(
-  base: Verbase,
-  color: DeclourAtom,
-  fromPart: SemVerPart,
-  fromPreIndex?: number,
-): AlignResult {
-  return {
-    needAlign: true,
-    aligned: formatVerbase(base),
-    decloured: colorizeVerbase({ base, color, fromPart, fromPreIndex }),
-  }
-}
-
-function alignMajor(source: Verbase, target: SemVer): AlignResult | null {
-  if (isWildcard(source.major)) {
-    return createUnchangedResult(source)
+  if (base.major > ref.major) {
+    return colorizeVerbase({
+      base,
+      color: red,
+      from: 'major',
+    })
+  } else if (base.major < ref.major) {
+    return colorizeVerbase({
+      base,
+      color: compose(black, bgRed),
+      from: 'major',
+    })
   }
 
-  if (source.major === target.major) return null
-  const mimicked = mimicVerbase(source, target, 'major')
-
-  if (source.major < target.major) {
-    return createAlignedResult(mimicked, red, 'major')
-  } else {
-    return createAlignedResult(mimicked, compose(black, bgRed), 'major')
-  }
-}
-
-function alignMinor(source: Verbase, target: SemVer): AlignResult | null {
-  if (source.minor == null) return null
-
-  if (isWildcard(source.minor)) {
-    return createUnchangedResult(source)
-  }
-
-  if (source.minor === target.minor) return null
-  const mimicked = mimicVerbase(source, target, 'minor')
-
-  if (source.minor < target.minor) {
-    const color = source.major === 0 ? red : cyan
-    return createAlignedResult(mimicked, color, 'minor')
-  } else {
-    return createAlignedResult(mimicked, compose(black, bgRed), 'minor')
-  }
-}
-
-function alignPatch(source: Verbase, target: SemVer): AlignResult | null {
-  if (source.patch == null) return null
-
-  if (isWildcard(source.patch)) {
-    return createUnchangedResult(source)
-  }
-
-  if (source.patch === target.patch) return null
-  const mimicked = mimicVerbase(source, target, 'patch')
-
-  if (source.patch < target.patch) {
-    let color: DeclourAtom
-
-    if (source.major === 0 && source.minor === 0) {
-      color = red
-    } else if (source.major === 0) {
-      color = cyan
-    } else {
-      color = green
+  if (base.minor != null) {
+    if (isWildcard(base.minor)) {
+      return [formatVerbase(base)]
+    } else if (base.minor > ref.minor) {
+      return colorizeVerbase({
+        base,
+        color: base.major === 0 ? red : cyan,
+        from: 'minor',
+      })
+    } else if (base.minor < ref.minor) {
+      return colorizeVerbase({
+        base,
+        color: compose(black, bgRed),
+        from: 'minor',
+      })
     }
-
-    return createAlignedResult(mimicked, color, 'patch')
-  } else {
-    return createAlignedResult(mimicked, compose(black, bgRed), 'patch')
   }
-}
 
-function alignPrerelease(source: Verbase, target: SemVer): AlignResult | null {
-  if (!isPrerelease(source) || !isPrerelease(target)) return null
+  if (base.patch != null) {
+    if (isWildcard(base.patch)) {
+      return [formatVerbase(base)]
+    } else if (base.patch > ref.patch) {
+      let color: DeclourAtom
 
-  const compared = comparePrereleases(source.prerelease, target.prerelease)
-  if (compared.result === 0) return null
-  const mimicked = mimicVerbase(source, target, 'prerelease')
-  const index = compared.differFromIndex
+      if (base.major === 0 && base.minor === 0) {
+        color = red
+      } else if (base.major === 0) {
+        color = cyan
+      } else {
+        color = green
+      }
 
-  if (compared.result < 0) {
-    return createAlignedResult(mimicked, yellow, 'prerelease', index)
-  } else {
-    return createAlignedResult(mimicked, compose(black, bgRed), 'prerelease', index)
+      return colorizeVerbase({
+        base,
+        color,
+        from: 'patch',
+      })
+    } else if (base.patch < ref.patch) {
+      return colorizeVerbase({
+        base,
+        color: compose(black, bgRed),
+        from: 'patch',
+      })
+    }
   }
-}
 
-export function alignVerbase(source: Verbase, target: SemVer): AlignResult {
-  const majorAligned = alignMajor(source, target)
-  if (majorAligned) return majorAligned
+  if (isPrerelease(base) && isPrerelease(ref)) {
+    const compared = comparePrerelease(base.prerelease, ref.prerelease)
 
-  const minorAligned = alignMinor(source, target)
-  if (minorAligned) return minorAligned
+    if (compared.result > 0) {
+      return colorizeVerbase({
+        base,
+        color: yellow,
+        from: 'prerelease',
+        fromPreIndex: compared.differFromIndex,
+      })
+    } else if (compared.result < 0) {
+      return colorizeVerbase({
+        base,
+        color: compose(black, bgRed),
+        from: 'prerelease',
+        fromPreIndex: compared.differFromIndex,
+      })
+    }
+  }
 
-  const patchAligned = alignPatch(source, target)
-  if (patchAligned) return patchAligned
-
-  const prereleaseAligned = alignPrerelease(source, target)
-  if (prereleaseAligned) return prereleaseAligned
-
-  return createUnchangedResult(source)
+  return [formatVerbase(base)]
 }

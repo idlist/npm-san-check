@@ -1,1 +1,2 @@
-export { hasPrerelease as containsPrerelease, tryParseVerange } from './range'
+export { isPrerelease, updateVerbase, type Verbase } from './base'
+export { hasPrerelease, newableOps, tryParseVerange, type Verange } from './range'
