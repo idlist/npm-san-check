@@ -1,13 +1,12 @@
 {
   "name": "npm-san-check",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Simple npm update checker with fewer dependency and fewer features.",
   "keywords": [
     "npm",
     "check",
     "dependency",
-    "update checker",
-    "updater"
+    "update"
   ],
   "homepage": "https://github.com/idlist/npm-san-check#readme",
   "bugs": {

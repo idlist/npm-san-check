@@ -12,7 +12,6 @@
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "paths": {
-      "@old/*": ["./src-old/*"],
       "@src/*": ["./src/*"]
     }
   },

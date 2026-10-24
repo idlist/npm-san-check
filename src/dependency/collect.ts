@@ -21,7 +21,7 @@ export function collectDependencies(packageJson: PackageJson, options: SanCheckO
   }
 
   for (const type of options.checkTypes.values()) {
-    const depsOfType = packageJson[type] as Record<string, string>
+    const depsOfType = packageJson[type] as Record<string, string> | undefined
     if (depsOfType == null) continue
 
     const entries = Object.entries(depsOfType)
