@@ -24,13 +24,13 @@ export function collectDependencies(packageJson: PackageJson, options: SanCheckO
     const depsOfType = packageJson[type] as Record<string, string>
     const entries = Object.entries(depsOfType)
 
-    for (const [name, version] of entries) {
+    for (const [name, range] of entries) {
       if (!isFilterMatched(name)) continue
       deps.push({
         name,
         type,
-        version,
-        versionClean: version.replace(/(?<!-) (?![-=<>])/g, ''),
+        range,
+        rangeClean: range.replace(/(?<!-) (?![-=<>])/g, ''),
       })
     }
   }

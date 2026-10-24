@@ -16,7 +16,7 @@ export function planDependencyUpdate(
     if (result == null || result.network !== 'ok') continue
 
     const { newer, latest } = result.target
-    const verange = tryParseVerange(dep.version)
+    const verange = tryParseVerange(dep.range)
     if (verange == null) continue
 
     if (semverIssues[dep.name] == null && newer != null) {

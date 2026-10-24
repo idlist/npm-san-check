@@ -30,8 +30,9 @@ export interface SanCheckOptions {
 export interface Dependency {
   name: string
   type: DependencyType
-  version: string
-  versionClean: string
+  range: string
+  /** Fallback string when the Verange parser cannot parse the range. */
+  rangeClean: string
 }
 
 export type SemVerIssue = 'invalid' | 'complex'

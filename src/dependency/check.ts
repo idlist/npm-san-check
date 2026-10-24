@@ -17,8 +17,8 @@ async function checkDependency(
   }
 
   meta = getMetaResult
-  const range = tryParseRange(dep.version)
-  const verange = tryParseVerange(dep.version)
+  const range = tryParseRange(dep.range)
+  const verange = tryParseVerange(dep.range)
 
   let includePrerelease = options.checkPrerelease
   if (verange != null && hasPrerelease(verange)) {
@@ -38,7 +38,7 @@ async function checkDependency(
   let newer: SemVer | null = null
 
   if (verange?.type === 'unary' && newableOps.has(verange.op)) {
-    newer = findMaxSatisfying(sorted, dep.version, { includePrerelease })
+    newer = findMaxSatisfying(sorted, dep.range, { includePrerelease })
 
     // Possible downgrade of dependency (due to deprecation or unpublishing).
     if (newer == null && range != null && isLessThanRange(latest, range)) {
