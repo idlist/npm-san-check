@@ -68,6 +68,19 @@ export function isPrerelease(
   return base.prerelease != null && base.prerelease.length > 0
 }
 
+export function takeVerbaseFromSemVer(from: SemVer): Verbase {
+  const verbase: Verbase = {
+    major: from.major,
+    minor: from.minor,
+    patch: from.patch,
+  }
+
+  if (from.prerelease?.length) verbase.prerelease = [...from.prerelease]
+  if (from.build?.length) verbase.build = [...from.build]
+
+  return verbase
+}
+
 export function formatVerbase(base: Verbase) {
   const { major, minor, patch, prerelease, build } = base
   let formatted = String(major)
@@ -117,6 +130,22 @@ function alignVerbase(source: Verbase, target: SemVer, from: SemVerPart) {
   return aligned
 }
 
+export function updateVerbase(source: Verbase, target: SemVer): Verbase | null {
+  const majorMaybeUpdated = tryUpdateMajor(source, target)
+  if (majorMaybeUpdated) return majorMaybeUpdated
+
+  const minorMaybeUpdated = tryUpdateMinor(source, target)
+  if (minorMaybeUpdated) return minorMaybeUpdated
+
+  const patchMaybeUpdated = tryUpdatePatch(source, target)
+  if (patchMaybeUpdated) return patchMaybeUpdated
+
+  const prereleaseMaybeUpdated = tryUpdatePrerelease(source, target)
+  if (prereleaseMaybeUpdated) return prereleaseMaybeUpdated
+
+  return null
+}
+
 function tryUpdateMajor(source: Verbase, target: SemVer): Verbase | null {
   if (isWildcard(source.major)) return null
   if (source.major === target.major) return null
@@ -142,22 +171,6 @@ function tryUpdatePrerelease(source: Verbase, target: SemVer): Verbase | null {
   const compared = comparePrerelease(source.prerelease, target.prerelease)
   if (compared.result === 0) return null
   return alignVerbase(source, target, 'prerelease')
-}
-
-export function updateVerbase(source: Verbase, target: SemVer): Verbase | null {
-  const majorMaybeUpdated = tryUpdateMajor(source, target)
-  if (majorMaybeUpdated) return majorMaybeUpdated
-
-  const minorMaybeUpdated = tryUpdateMinor(source, target)
-  if (minorMaybeUpdated) return minorMaybeUpdated
-
-  const patchMaybeUpdated = tryUpdatePatch(source, target)
-  if (patchMaybeUpdated) return patchMaybeUpdated
-
-  const prereleaseMaybeUpdated = tryUpdatePrerelease(source, target)
-  if (prereleaseMaybeUpdated) return prereleaseMaybeUpdated
-
-  return null
 }
 
 interface ColorizeOptions {
@@ -200,17 +213,17 @@ function colorizeVerbase(options: ColorizeOptions): DeclourPiece[] {
   return declour
 }
 
-export function colorizeVerbaseDiff(base: Verbase, ref: SemVer): DeclourPiece[] {
-  if (isWildcard(base.major)) {
+export function colorizeVerbaseDiff(base: Verbase, from: Verbase): DeclourPiece[] {
+  if (isWildcard(base.major) || isWildcard(from.major)) {
     return [formatVerbase(base)]
   }
-  if (base.major > ref.major) {
+  if (base.major > from.major) {
     return colorizeVerbase({
       base,
       color: red,
       from: 'major',
     })
-  } else if (base.major < ref.major) {
+  } else if (base.major < from.major) {
     return colorizeVerbase({
       base,
       color: compose(black, bgRed),
@@ -218,16 +231,16 @@ export function colorizeVerbaseDiff(base: Verbase, ref: SemVer): DeclourPiece[] 
     })
   }
 
-  if (base.minor != null) {
-    if (isWildcard(base.minor)) {
+  if (base.minor != null && from.minor != null) {
+    if (isWildcard(base.minor) || isWildcard(from.minor)) {
       return [formatVerbase(base)]
-    } else if (base.minor > ref.minor) {
+    } else if (base.minor > from.minor) {
       return colorizeVerbase({
         base,
         color: base.major === 0 ? red : cyan,
         from: 'minor',
       })
-    } else if (base.minor < ref.minor) {
+    } else if (base.minor < from.minor) {
       return colorizeVerbase({
         base,
         color: compose(black, bgRed),
@@ -236,10 +249,10 @@ export function colorizeVerbaseDiff(base: Verbase, ref: SemVer): DeclourPiece[] 
     }
   }
 
-  if (base.patch != null) {
-    if (isWildcard(base.patch)) {
+  if (base.patch != null && from.patch != null) {
+    if (isWildcard(base.patch) || isWildcard(from.patch)) {
       return [formatVerbase(base)]
-    } else if (base.patch > ref.patch) {
+    } else if (base.patch > from.patch) {
       let color: DeclourAtom
 
       if (base.major === 0 && base.minor === 0) {
@@ -255,7 +268,7 @@ export function colorizeVerbaseDiff(base: Verbase, ref: SemVer): DeclourPiece[] 
         color,
         from: 'patch',
       })
-    } else if (base.patch < ref.patch) {
+    } else if (base.patch < from.patch) {
       return colorizeVerbase({
         base,
         color: compose(black, bgRed),
@@ -264,8 +277,8 @@ export function colorizeVerbaseDiff(base: Verbase, ref: SemVer): DeclourPiece[] 
     }
   }
 
-  if (isPrerelease(base) && isPrerelease(ref)) {
-    const compared = comparePrerelease(base.prerelease, ref.prerelease)
+  if (isPrerelease(base) && isPrerelease(from)) {
+    const compared = comparePrerelease(base.prerelease, from.prerelease)
 
     if (compared.result > 0) {
       return colorizeVerbase({

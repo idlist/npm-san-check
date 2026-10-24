@@ -11,6 +11,7 @@ import {
   collectDependencies,
   collectNetworkIssues,
   collectSemverIssues,
+  displayPrompt,
   displayUpdatePlan,
   planDependencyUpdate,
 } from './dependency/index'
@@ -24,13 +25,13 @@ export async function sanCheck(options: SanCheckOptions) {
 
   const deps = collectDependencies(packageJson, options)
   if (!deps.length) {
-    print.info('No dependencies.')
+    print.i('No dependencies.')
     return
   }
 
-  const depsMap = new Map<string, Dependency>()
+  const depsMap: Record<string, Dependency> = {}
   for (const dep of deps) {
-    depsMap.set(dep.name, dep)
+    depsMap[dep.name] = dep
   }
 
   const semverIssues = collectSemverIssues(deps)
@@ -38,6 +39,8 @@ export async function sanCheck(options: SanCheckOptions) {
   const networkIssues = collectNetworkIssues(checkResult)
   const plan = planDependencyUpdate(deps, checkResult, semverIssues)
   displayUpdatePlan(plan, depsMap, semverIssues, networkIssues, options)
+  // TODO: write file
+  displayPrompt(plan, options)
 }
 
 async function tryGetPackageFile(file: string) {
@@ -46,7 +49,7 @@ async function tryGetPackageFile(file: string) {
     const packageData = await fsp.readFile(fullPath, { encoding: 'utf-8' })
     return packageData
   } catch {
-    print.error(declour('there isn\'t a ', green(file), ' file under this directory'))
+    print.e(declour('there isn\'t a ', green(file), ' file under this directory'))
     return
   }
 }
@@ -56,7 +59,7 @@ async function tryLoadPackageJson(file: string, packageData: string) {
     const packageJson = JSON.parse(packageData) as PackageJson
     return packageJson
   } catch {
-    print.error(declour('failed to parse ', green(file), '.'))
+    print.e(declour('failed to parse ', green(file), '.'))
     return
   }
 }

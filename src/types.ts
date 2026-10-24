@@ -1,5 +1,5 @@
-import type { Verange } from '@src/veranger'
 import type { SemVer } from 'verkit'
+import type { VerangeUpdatable } from './veranger'
 
 export const dependencyType = [
   'dependencies',
@@ -56,6 +56,7 @@ export interface NetworkOkResult {
 export type CheckResult = NetworkBadResult | NetworkOkResult
 
 export interface UpdatePlan {
-  toNewer: Record<string, Verange>
-  toLatest: Record<string, Verange>
+  from: Record<string, VerangeUpdatable>
+  toNewer: Record<string, VerangeUpdatable>
+  toLatest: Record<string, VerangeUpdatable>
 }

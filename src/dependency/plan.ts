@@ -1,5 +1,12 @@
 import type { CheckResult, Dependency, SemVerIssue, UpdatePlan } from '@src/types'
-import { tryParseVerange, updateVerangeToLatest, updateVerangeToNewer } from '@src/veranger'
+
+import {
+  takeVerangeFromSemVer,
+  tryParseVerange,
+  updateVerangeToLatest,
+  updateVerangeToNewer,
+  type VerangeUpdatable,
+} from '@src/veranger'
 
 export function planDependencyUpdate(
   deps: Dependency[],
@@ -7,6 +14,7 @@ export function planDependencyUpdate(
   semverIssues: Record<string, SemVerIssue>,
 ): UpdatePlan {
   const plan: UpdatePlan = {
+    from: {},
     toNewer: {},
     toLatest: {},
   }
@@ -17,18 +25,25 @@ export function planDependencyUpdate(
 
     const { newer, latest } = result.target
     const verange = tryParseVerange(dep.range)
-    if (verange == null) continue
 
-    if (semverIssues[dep.name] == null && newer != null) {
+    if (!(dep.name in semverIssues) && verange != null && newer != null) {
       const newerUpdated = updateVerangeToNewer(verange, newer)
+
       if (newerUpdated != null) {
         plan.toNewer[dep.name] = newerUpdated
+        plan.from[dep.name] = verange as VerangeUpdatable
       }
     }
 
-    const latestUpdated = updateVerangeToLatest(verange, latest)
-    if (latestUpdated != null) {
-      plan.toLatest[dep.name] = latestUpdated
+    if (verange != null) {
+      const latestUpdated = updateVerangeToLatest(verange, latest)
+
+      if (latestUpdated != null) {
+        plan.toLatest[dep.name] = latestUpdated
+        plan.from[dep.name] = verange as VerangeUpdatable
+      }
+    } else {
+      plan.toLatest[dep.name] = takeVerangeFromSemVer(latest)
     }
   }
 

@@ -1,6 +1,15 @@
 import type { DeclourPiece } from '@src/declour'
 import type { SemVer } from 'verkit'
-import { colorizeVerbaseDiff, formatVerbase, isPrerelease, parseVerbase, updateVerbase, type Verbase } from './base'
+
+import {
+  colorizeVerbaseDiff,
+  formatVerbase,
+  isPrerelease,
+  parseVerbase,
+  takeVerbaseFromSemVer,
+  updateVerbase,
+  type Verbase,
+} from './base'
 
 type VerangeUnaryOp = '^' | '~' | '>' | '>=' | '<' | '<=' | '=' | ''
 
@@ -25,11 +34,15 @@ export interface VerangeCompound {
   type: 'compound'
 }
 
-export type Verange =
+export type VerangeUpdatable =
   | VerangeUnary
-  | VerangeMultiple
   | VerangeHyphen
+
+export type VerangeIgnored =
+  | VerangeMultiple
   | VerangeCompound
+
+export type Verange = VerangeUpdatable | VerangeIgnored
 
 const ops2char = new Set(['>=', '<='])
 const ops1char = new Set(['^', '~', '>', '<', '='])
@@ -90,8 +103,16 @@ export function hasPrerelease(range: Verange): boolean {
   }
 }
 
-export function formatVerange(range: VerangeUnary | VerangeHyphen): string
-export function formatVerange(range: VerangeCompound): null
+export function takeVerangeFromSemVer(from: SemVer): VerangeUnary {
+  return {
+    type: 'unary',
+    op: '',
+    base: takeVerbaseFromSemVer(from),
+  }
+}
+
+export function formatVerange(range: VerangeUpdatable): string
+export function formatVerange(range: VerangeIgnored): null
 export function formatVerange(range: Verange): string | null
 export function formatVerange(range: Verange): string | null {
   switch (range.type) {
@@ -105,6 +126,20 @@ export function formatVerange(range: Verange): string | null {
 }
 
 export const newableOps = new Set<VerangeUnaryOp>(['^', '~', '>', '>='])
+
+export function updateVerangeToNewer(
+  range: Verange,
+  target: SemVer,
+): VerangeUpdatable | null {
+  switch (range.type) {
+    case 'unary':
+      return updateUnaryVerangeToNewer(range, target)
+    case 'hyphen':
+      return updateHyphenVerangeToNewer(range, target)
+    default:
+      return null
+  }
+}
 
 function updateUnaryVerangeToNewer(
   unary: VerangeUnary,
@@ -131,15 +166,15 @@ function updateHyphenVerangeToNewer(
   return { type: 'hyphen', bases: [left, rightUpdated] }
 }
 
-export function updateVerangeToNewer(
+export function updateVerangeToLatest(
   range: Verange,
   target: SemVer,
-): Verange | null {
+): VerangeUpdatable | null {
   switch (range.type) {
     case 'unary':
-      return updateUnaryVerangeToNewer(range, target)
+      return updateUnaryVerangeToLatest(range, target)
     case 'hyphen':
-      return updateHyphenVerangeToNewer(range, target)
+      return updateHyphenVerangeToLatest(range, target)
     default:
       return null
   }
@@ -168,15 +203,17 @@ function updateHyphenVerangeToLatest(
   return { type: 'hyphen', bases: [left, alignedRight] }
 }
 
-export function updateVerangeToLatest(
+export function colorizeVerangeDiff(
   range: Verange,
-  target: SemVer,
-): Verange | null {
+  from: Verange,
+): DeclourPiece[] | null {
   switch (range.type) {
     case 'unary':
-      return updateUnaryVerangeToLatest(range, target)
+      if (from.type !== 'unary') return null
+      return colorizeUnaryVerangeDiff(range, from)
     case 'hyphen':
-      return updateHyphenVerangeToLatest(range, target)
+      if (from.type !== 'hyphen') return null
+      return colorizeHyphenVerangeDiff(range, from)
     default:
       return null
   }
@@ -184,46 +221,23 @@ export function updateVerangeToLatest(
 
 function colorizeUnaryVerangeDiff(
   unary: VerangeUnary,
-  ref: SemVer,
+  from: VerangeUnary,
 ): DeclourPiece[] {
-  return [unary.op, ...colorizeVerbaseDiff(unary.base, ref)]
+  return [
+    unary.op,
+    ...colorizeVerbaseDiff(unary.base, from.base),
+  ]
 }
 
 function colorizeHyphenVerangeDiff(
   hyphen: VerangeHyphen,
-  ref: SemVer,
+  from: VerangeHyphen,
 ): DeclourPiece[] {
   const [left, right] = hyphen.bases
 
   return [
     formatVerbase(left),
     ' - ',
-    ...colorizeVerbaseDiff(right, ref),
+    ...colorizeVerbaseDiff(right, from.bases[1]),
   ]
-}
-
-export function colorizeVerangeDiff(
-  range: VerangeUnary | VerangeHyphen,
-  ref: SemVer,
-): DeclourPiece[]
-export function colorizeVerangeDiff(
-  range: VerangeCompound,
-  ref: SemVer,
-): null
-export function colorizeVerangeDiff(
-  range: Verange,
-  ref: SemVer,
-): DeclourPiece[] | null
-export function colorizeVerangeDiff(
-  range: Verange,
-  ref: SemVer,
-): DeclourPiece[] | null {
-  switch (range.type) {
-    case 'unary':
-      return colorizeUnaryVerangeDiff(range, ref)
-    case 'hyphen':
-      return colorizeHyphenVerangeDiff(range, ref)
-    default:
-      return null
-  }
 }
