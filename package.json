@@ -20,10 +20,10 @@
   "license": "PolyForm-Internal-Use-1.0.0",
   "author": "i'DLisT <i@idl.ist> (https://idl.ist/)",
   "type": "module",
-  "main": "bin/cli.js",
+  "main": "bin/cli.mjs",
   "bin": {
-    "npm-san-check": "bin/cli.js",
-    "npm-sc": "bin/cli.js"
+    "npm-san-check": "bin/cli.mjs",
+    "npm-sc": "bin/cli.mjs"
   },
   "files": [
     "bin"
