@@ -11,7 +11,7 @@ import {
   type DeclourAtom,
   type DeclourPiece,
   green,
-  noop,
+  plain,
   red,
   yellow,
 } from '@src/declour'
@@ -182,19 +182,19 @@ interface ColorizeOptions {
 
 function colorizeVerbase(options: ColorizeOptions): DeclourPiece[] {
   const { base, color, from, fromPreIndex } = options
-  const declour: DeclourPiece[] = []
+  const pieces: DeclourPiece[] = []
 
-  const majorColor = from === 'major' ? color : noop
-  declour.push(majorColor(String(base.major)))
+  const majorColor = from === 'major' ? color : plain
+  pieces.push(majorColor(String(base.major)))
 
   if (base.minor != null) {
-    const minorColor = affectsMinor.has(from) ? color : noop
-    declour.push(minorColor('.', String(base.minor)))
+    const minorColor = affectsMinor.has(from) ? color : plain
+    pieces.push(minorColor('.', String(base.minor)))
   }
 
   if (base.patch != null) {
-    const patchColor = affectsPatch.has(from) ? color : noop
-    declour.push(patchColor('.', String(base.patch)))
+    const patchColor = affectsPatch.has(from) ? color : plain
+    pieces.push(patchColor('.', String(base.patch)))
   }
 
   if (base.prerelease != null) {
@@ -202,15 +202,15 @@ function colorizeVerbase(options: ColorizeOptions): DeclourPiece[] {
     const index = fromPreIndex ?? 0
     const same = base.prerelease.slice(0, index).join('.')
     const diff = base.prerelease.slice(index).join('.')
-    const preColor = from !== 'prerelease' ? color : noop
+    const preColor = from !== 'prerelease' ? color : plain
 
-    declour.push(preColor('-'))
-    if (same.length > 0) declour.push(preColor(same))
-    if (same.length > 0 && diff.length > 0) declour.push(preColor('.'))
-    if (diff.length > 0) declour.push(color(diff))
+    pieces.push(preColor('-'))
+    if (same.length > 0) pieces.push(preColor(same))
+    if (same.length > 0 && diff.length > 0) pieces.push(preColor('.'))
+    if (diff.length > 0) pieces.push(color(diff))
   }
 
-  return declour
+  return pieces
 }
 
 export function colorizeVerbaseDiff(base: Verbase, from: Verbase): DeclourPiece[] {

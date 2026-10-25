@@ -34,7 +34,8 @@ export function atom(action: AtomAction, pieces: DeclourPiece[]): Declour[] {
 export function fg(color: TextStyle): DeclourAtom {
   return (...pieces) => {
     return atom((piece) => {
-      return { ...piece, fg: color }
+      piece.fg = color
+      return piece
     }, pieces)
   }
 }
@@ -42,7 +43,8 @@ export function fg(color: TextStyle): DeclourAtom {
 export function bg(color: TextStyle): DeclourAtom {
   return (...pieces) => {
     return atom((piece) => {
-      return { ...piece, bg: color }
+      piece.bg = color
+      return piece
     }, pieces)
   }
 }
@@ -50,7 +52,9 @@ export function bg(color: TextStyle): DeclourAtom {
 export function styles(style: TextStyle): DeclourAtom {
   return (...pieces) => {
     return atom((piece) => {
-      return { ...piece, styles: [...(piece.styles ?? []), style] }
+      piece.styles ??= []
+      piece.styles.push(style)
+      return piece
     }, pieces)
   }
 }
@@ -64,7 +68,6 @@ export const cyanBright = fg('cyanBright')
 export const gray = fg('gray')
 export const green = fg('green')
 export const greenBright = fg('greenBright')
-export const grey = fg('grey')
 export const magenta = fg('magenta')
 export const magentaBright = fg('magentaBright')
 export const red = fg('red')
@@ -83,7 +86,6 @@ export const bgCyanBright = bg('bgCyanBright')
 export const bgGray = bg('bgGray')
 export const bgGreen = bg('bgGreen')
 export const bgGreenBright = bg('bgGreenBright')
-export const bgGrey = bg('bgGrey')
 export const bgMagenta = bg('bgMagenta')
 export const bgMagentaBright = bg('bgMagentaBright')
 export const bgRed = bg('bgRed')
@@ -107,16 +109,12 @@ export const reset = styles('reset')
 export const strikethrough = styles('strikethrough')
 export const underline = styles('underline')
 
-export const noop: DeclourAtom = (...pieces) => {
+export const plain: DeclourAtom = (...pieces) => {
   return atom((piece) => piece, pieces)
 }
 
 export const compose = (...atoms: DeclourAtom[]): DeclourAtom => {
   return (...pieces) => {
-    let applied = pieces
-    for (const apply of atoms) {
-      applied = apply(...pieces)
-    }
-    return applied as Declour[]
+    return atoms.reduce<Declour[]>((applied, apply) => apply(...applied), plain(...pieces))
   }
 }

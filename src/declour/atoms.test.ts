@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { atom, type AtomAction, bg, type Declour, type DeclourPiece, fg, styles, toDecl } from './atoms'
+import { atom, type AtomAction, bg, compose, type Declour, type DeclourPiece, fg, plain, styles, toDecl } from './atoms'
 
 describe('toDecl', () => {
   it('wraps a string into a text-only declaration', () => {
@@ -33,14 +33,6 @@ describe('atom', () => {
     const expected: Declour[] = [{ text: 'm:a' }, { text: 'm:b' }]
 
     expect(atom(createMarker('m'), pieces)).toEqual(expected)
-  })
-
-  it('does not modify the input declaration', () => {
-    const decl: Declour = { text: 'a', fg: 'red', styles: ['bold'] }
-    const expected: Declour = { text: 'a', fg: 'red', styles: ['bold'] }
-
-    atom((d) => ({ ...d, bg: 'bgBlue' }), [decl])
-    expect(decl).toEqual(expected)
   })
 })
 
@@ -89,5 +81,44 @@ describe('style', () => {
     const expected: Declour[] = [{ text: 'a', styles: ['bold', 'underline'] }]
 
     expect(styles('underline')(...pieces)).toEqual(expected)
+  })
+})
+
+describe('plain', () => {
+  it('keeps the text and the formatting', () => {
+    const pieces: DeclourPiece[] = ['a', { text: 'b', fg: 'red' }]
+    const expected: Declour[] = [{ text: 'a' }, { text: 'b', fg: 'red' }]
+
+    expect(plain(...pieces)).toEqual(expected)
+  })
+})
+
+describe('compose', () => {
+  it('returns normalized declarations for no atoms', () => {
+    const pieces: DeclourPiece[] = ['a']
+    const expected: Declour[] = [{ text: 'a' }]
+
+    expect(compose()(...pieces)).toEqual(expected)
+  })
+
+  it('applies every atom to the same declaration', () => {
+    const pieces: DeclourPiece[] = ['a']
+    const expected: Declour[] = [{ text: 'a', fg: 'red', bg: 'bgBlue' }]
+
+    expect(compose(fg('red'), bg('bgBlue'))(...pieces)).toEqual(expected)
+  })
+
+  it('lets a later atom overwrite an earlier atom', () => {
+    const pieces: DeclourPiece[] = ['a']
+    const expected: Declour[] = [{ text: 'a', fg: 'blue' }]
+
+    expect(compose(fg('red'), fg('blue'))(...pieces)).toEqual(expected)
+  })
+
+  it('applies the atoms in order', () => {
+    const pieces: DeclourPiece[] = ['a']
+    const expected: Declour[] = [{ text: 'a', fg: 'red', styles: ['bold', 'underline'] }]
+
+    expect(compose(fg('red'), styles('bold'), styles('underline'))(...pieces)).toEqual(expected)
   })
 })

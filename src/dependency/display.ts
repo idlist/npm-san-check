@@ -1,7 +1,7 @@
 import { blue, cyan, type DeclourPiece, green, red, yellow } from '@src/declour'
 import print from '@src/print'
 import type { Dependency, DependencyType, NetworkIssue, SanCheckOptions, SemVerIssue, UpdatePlan } from '@src/types'
-import { DeclLatest, DeclName, DeclNewer, interpose } from '@src/utils'
+import { interpose, pcsLatest, pcsName, pcsNewer } from '@src/utils'
 import { colorizeVerangeDiff, tryFormatVerange } from '@src/veranger'
 
 function head(type: DependencyType): DeclourPiece[] {
@@ -46,7 +46,7 @@ export function displayUpdatePlan(
 
   if (!options.checkLatest) {
     if (hasNewer) {
-      print.di('\nPackage(s) having ', ...DeclNewer, ' versions:')
+      print.di('\nPackage(s) having ', ...pcsNewer, ' versions:')
       displayList(nameOfNewer, plan, depsMap, size)
     }
 
@@ -59,7 +59,7 @@ export function displayUpdatePlan(
       })
 
     if (nameOfLatest.length > 0) {
-      print.di('\nOther package(s) having ', ...DeclLatest, ' versions:')
+      print.di('\nOther package(s) having ', ...pcsLatest, ' versions:')
       displayList(nameOfLatest, plan, depsMap, size, { showNewer: false })
     }
   } else {
@@ -71,7 +71,7 @@ export function displayUpdatePlan(
       })
 
     if (nameOfLatest.length > 0) {
-      print.di('\nPackage(s) having ', ...DeclLatest, ' versions:')
+      print.di('\nPackage(s) having ', ...pcsLatest, ' versions:')
       displayList(nameOfLatest, plan, depsMap, size, { useDitto: 'newer' })
     }
   }
@@ -140,13 +140,13 @@ function displayList(
 
   print.di(
     '\n    ',
-    ...DeclName,
+    ...pcsName,
     ' '.repeat(size.name + size.current + 2),
     ...(showNewer
-      ? [' '.repeat(size.newer - 5), ...DeclNewer, '  ']
+      ? [' '.repeat(size.newer - 5), ...pcsNewer, '  ']
       : [' '.repeat(size.newer + 2)]),
     ' '.repeat(size.latest - 6),
-    ...DeclLatest,
+    ...pcsLatest,
   )
 
   for (const name of names) {

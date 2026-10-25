@@ -11,7 +11,6 @@ export {
   gray,
   green,
   greenBright,
-  grey,
   magenta,
   magentaBright,
   red,
@@ -32,7 +31,6 @@ export {
   bgGray,
   bgGreen,
   bgGreenBright,
-  bgGrey,
   bgMagenta,
   bgMagentaBright,
   bgRed,
@@ -59,7 +57,7 @@ export {
   underline,
 } from './atoms'
 
-export { compose, noop } from './atoms'
+export { compose, plain } from './atoms'
 export type { DeclourAtom, DeclourPiece } from './atoms'
 
 export function declour(...pieces: DeclourPiece[]): string {
