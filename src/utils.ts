@@ -10,6 +10,6 @@ export function interpose<T, U>(array: T[], separator: U) {
   return array.flatMap((item, i) => i === 0 ? [item] : [separator, item])
 }
 
-export const Name: DeclourPiece[] = [cyan('n'), 'ame']
-export const Newer: DeclourPiece[] = [green('n'), 'ewer']
-export const Latest: DeclourPiece[] = [magenta('l'), 'atest']
+export const DeclName: DeclourPiece[] = [cyan('n'), 'ame']
+export const DeclNewer: DeclourPiece[] = [green('n'), 'ewer']
+export const DeclLatest: DeclourPiece[] = [magenta('l'), 'atest']

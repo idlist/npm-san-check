@@ -1,11 +1,11 @@
-export { isPrerelease, updateVerbase, type Verbase } from './base'
+export { isPrerelease, type Verbase } from './base'
 
 export {
   colorizeVerangeDiff,
-  formatVerange,
   hasPrerelease,
-  newableOps,
+  opsCanBeNewer,
   takeVerangeFromSemVer,
+  tryFormatVerange,
   tryParseVerange,
   updateVerangeToLatest,
   updateVerangeToNewer,

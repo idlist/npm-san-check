@@ -1,5 +1,5 @@
 import type { Dependency, UpdateRecord } from '@src/types'
-import { formatVerange } from '@src/veranger'
+import { tryFormatVerange } from '@src/veranger'
 import { escapeRegExp } from 'es-toolkit'
 
 type SectionIndexes = Record<string, [number, number]>
@@ -18,7 +18,7 @@ export function rewriteUpdateInPlace(
       const dep = depsMap[name]
       if (dep == null || dep.type !== section) continue
 
-      const updated = formatVerange(verange)
+      const updated = tryFormatVerange(verange)
       if (updated == null) continue
 
       const reCurrent = escapeRegExp(dep.range)

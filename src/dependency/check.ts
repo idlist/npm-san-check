@@ -1,5 +1,5 @@
 import type { CheckResult, Dependency, SanCheckOptions, UpdateTarget } from '@src/types'
-import { hasPrerelease, newableOps, tryParseVerange } from '@src/veranger'
+import { hasPrerelease, opsCanBeNewer, tryParseVerange } from '@src/veranger'
 import PQueue from 'p-queue'
 import { findMaxSatisfying, isLessThanRange, isStable, parse, type SemVer, sort, tryParseRange } from 'verkit'
 import { getPackageMeta } from './get-meta'
@@ -34,7 +34,7 @@ async function checkDependency(
 
   let newer: SemVer | null = null
 
-  if (verange?.type === 'unary' && newableOps.has(verange.op)) {
+  if (verange?.type === 'unary' && opsCanBeNewer.has(verange.op)) {
     newer = findMaxSatisfying(sorted, dep.range, { includePrerelease })
 
     // Possible downgrade of dependency (due to deprecation or unpublishing).

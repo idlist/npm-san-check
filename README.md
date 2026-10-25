@@ -16,7 +16,8 @@ The CLI tool starts as a *practice* to mimic the core (i.e., a small subset of) 
 
 The good side is:
 
-- It has 0 dependencies to install. Dependencies are bundled with sensible choice and sizes, and the bundled script is around 100KB.
+- It has 0 installation dependencies.
+- There are 5 actual dependencies with sensible choice, and the bundled script is around 100KB.
 
 I've been using the tool myself for more than 2 years, and it kind of works. Now I've decided to give it some love by refactoring it... well, hope it doesn't break.
 
@@ -72,7 +73,7 @@ npm-sc [...filters]
 `filters`: Packages to be updated.
 
 - Supports `*` for glob matching (e.g., `*eslint*` matches every packages that have `eslint` in their name, like `@eslint/js` or `@typescript-eslint/parser`).
-- Words are combined by **OR** logic.
+- Keywords are combined by **OR** logic.
 
 `-u`, `--update`: Write in `package.json` with the updated dependencies.
 
@@ -92,9 +93,11 @@ npm-sc [...filters]
 
 `-f`, `--file`: The location of the package file, relative to current working directory. Default to `package.json`.
 
-`-p`, `--provider`: From where the tool get the versions of the packages. Can be set to `npm` (from `npm`) or `jsd` (from jsDelivr).
+`-p`, `--provider`: From where the tool get the versions of the packages. Can be set to `npm` (from npm) or `jsd` (from jsDelivr).
 
-`-r`, `--registry`: The URL of the registry. Default to the `npm` registry.
+`-r`, `--registry`: The URL of the registry. Default to the npm registry.
+
+Note that the tool recognizes the terminal proxies (`HTTP_PROXY` and `HTTPS_PROXY`) by setting `NODE_USE_ENV_PROXY` to `1`.
 
 ## License
 

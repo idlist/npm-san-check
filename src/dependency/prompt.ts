@@ -1,7 +1,7 @@
 import { cyan, type DeclourPiece, green, magenta, yellow } from '@src/declour'
 import print from '@src/print'
 import type { SanCheckOptions, UpdatePlan } from '@src/types'
-import { Latest, Newer } from '@src/utils'
+import { DeclLatest, DeclNewer } from '@src/utils'
 
 export function displayPrompt(plan: UpdatePlan, options: SanCheckOptions) {
   let promptNewer = false
@@ -25,7 +25,7 @@ export function displayPrompt(plan: UpdatePlan, options: SanCheckOptions) {
       ' to update the packages in ',
       green(options.file),
       ' to the ',
-      ...Newer,
+      ...DeclNewer,
       ' versions.',
     )
   }
@@ -38,7 +38,7 @@ export function displayPrompt(plan: UpdatePlan, options: SanCheckOptions) {
       ' to update the packages in ',
       green(options.file),
       ' to the ',
-      ...Latest,
+      ...DeclLatest,
       ' versions.',
     )
   }

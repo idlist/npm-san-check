@@ -22,7 +22,7 @@ export interface VerangeUnary {
 // TODO: support multiple unary ranges
 export interface VerangeMultiple {
   type: 'multiple'
-  bases: VerangeUnary[]
+  ranges: VerangeUnary[]
 }
 
 export interface VerangeHyphen {
@@ -111,10 +111,10 @@ export function takeVerangeFromSemVer(from: SemVer): VerangeUnary {
   }
 }
 
-export function formatVerange(range: VerangeUpdatable): string
-export function formatVerange(range: VerangeIgnored): null
-export function formatVerange(range: Verange): string | null
-export function formatVerange(range: Verange): string | null {
+export function tryFormatVerange(range: VerangeUpdatable): string
+export function tryFormatVerange(range: VerangeIgnored): null
+export function tryFormatVerange(range: Verange): string | null
+export function tryFormatVerange(range: Verange): string | null {
   switch (range.type) {
     case 'unary':
       return `${range.op}${formatVerbase(range.base)}`
@@ -125,7 +125,7 @@ export function formatVerange(range: Verange): string | null {
   }
 }
 
-export const newableOps = new Set<VerangeUnaryOp>(['^', '~', '>', '>='])
+export const opsCanBeNewer = new Set<VerangeUnaryOp>(['^', '~', '>', '>='])
 
 export function updateVerangeToNewer(
   range: Verange,
@@ -133,19 +133,19 @@ export function updateVerangeToNewer(
 ): VerangeUpdatable | null {
   switch (range.type) {
     case 'unary':
-      return updateUnaryVerangeToNewer(range, target)
+      return toNewerUnary(range, target)
     case 'hyphen':
-      return updateHyphenVerangeToNewer(range, target)
+      return toNewerHyphen(range, target)
     default:
       return null
   }
 }
 
-function updateUnaryVerangeToNewer(
+function toNewerUnary(
   unary: VerangeUnary,
   target: SemVer,
 ): VerangeUnary | null {
-  if (!newableOps.has(unary.op)) return null
+  if (!opsCanBeNewer.has(unary.op)) return null
 
   const base = updateVerbase(unary.base, target)
   if (base == null) return null
@@ -153,13 +153,12 @@ function updateUnaryVerangeToNewer(
   return { type: 'unary', op: unary.op, base }
 }
 
-function updateHyphenVerangeToNewer(
+function toNewerHyphen(
   hyphen: VerangeHyphen,
   target: SemVer,
 ): VerangeHyphen | null {
   const [left, right] = hyphen.bases
 
-  // The left side is the lower bound, so it stays untouched.
   const rightUpdated = updateVerbase(right, target)
   if (rightUpdated == null) return null
 
@@ -172,15 +171,15 @@ export function updateVerangeToLatest(
 ): VerangeUpdatable | null {
   switch (range.type) {
     case 'unary':
-      return updateUnaryVerangeToLatest(range, target)
+      return toLatestUnary(range, target)
     case 'hyphen':
-      return updateHyphenVerangeToLatest(range, target)
+      return toLatestHyphen(range, target)
     default:
       return null
   }
 }
 
-function updateUnaryVerangeToLatest(
+function toLatestUnary(
   unary: VerangeUnary,
   target: SemVer,
 ): VerangeUnary | null {
@@ -190,7 +189,7 @@ function updateUnaryVerangeToLatest(
   return { type: 'unary', op: unary.op, base }
 }
 
-function updateHyphenVerangeToLatest(
+function toLatestHyphen(
   hyphen: VerangeHyphen,
   target: SemVer,
 ): VerangeHyphen | null {
@@ -210,16 +209,16 @@ export function colorizeVerangeDiff(
   switch (range.type) {
     case 'unary':
       if (from.type !== 'unary') return null
-      return colorizeUnaryVerangeDiff(range, from)
+      return colorizeDiffUnary(range, from)
     case 'hyphen':
       if (from.type !== 'hyphen') return null
-      return colorizeHyphenVerangeDiff(range, from)
+      return colorizeDiffHyphen(range, from)
     default:
       return null
   }
 }
 
-function colorizeUnaryVerangeDiff(
+function colorizeDiffUnary(
   unary: VerangeUnary,
   from: VerangeUnary,
 ): DeclourPiece[] {
@@ -229,7 +228,7 @@ function colorizeUnaryVerangeDiff(
   ]
 }
 
-function colorizeHyphenVerangeDiff(
+function colorizeDiffHyphen(
   hyphen: VerangeHyphen,
   from: VerangeHyphen,
 ): DeclourPiece[] {

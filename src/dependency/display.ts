@@ -1,8 +1,8 @@
 import { blue, cyan, type DeclourPiece, green, red, yellow } from '@src/declour'
 import print from '@src/print'
 import type { Dependency, DependencyType, NetworkIssue, SanCheckOptions, SemVerIssue, UpdatePlan } from '@src/types'
-import { interpose, Latest, Name, Newer } from '@src/utils'
-import { colorizeVerangeDiff, formatVerange } from '@src/veranger'
+import { DeclLatest, DeclName, DeclNewer, interpose } from '@src/utils'
+import { colorizeVerangeDiff, tryFormatVerange } from '@src/veranger'
 
 function head(type: DependencyType): DeclourPiece[] {
   switch (type) {
@@ -46,7 +46,7 @@ export function displayUpdatePlan(
 
   if (!options.checkLatest) {
     if (hasNewer) {
-      print.di('\nPackage(s) having ', ...Newer, ' versions:')
+      print.di('\nPackage(s) having ', ...DeclNewer, ' versions:')
       displayList(nameOfNewer, plan, depsMap, size)
     }
 
@@ -59,7 +59,7 @@ export function displayUpdatePlan(
       })
 
     if (nameOfLatest.length > 0) {
-      print.di('\nOther package(s) having ', ...Latest, ' versions:')
+      print.di('\nOther package(s) having ', ...DeclLatest, ' versions:')
       displayList(nameOfLatest, plan, depsMap, size, { showNewer: false })
     }
   } else {
@@ -71,7 +71,7 @@ export function displayUpdatePlan(
       })
 
     if (nameOfLatest.length > 0) {
-      print.di('\nPackage(s) having ', ...Latest, ' versions:')
+      print.di('\nPackage(s) having ', ...DeclLatest, ' versions:')
       displayList(nameOfLatest, plan, depsMap, size, { useDitto: 'newer' })
     }
   }
@@ -95,10 +95,10 @@ function getColumnSize(
     stats.name = Math.max(stats.name, name.length)
 
     const from = plan.from[name]
-    const current = from ? formatVerange(from) : dep.rangeClean
+    const current = from ? tryFormatVerange(from) : dep.rangeClean
     stats.current = Math.max(stats.current, current.length)
 
-    const newer = formatVerange(verange).length
+    const newer = tryFormatVerange(verange).length
     stats.newer = Math.max(stats.newer, newer)
   }
 
@@ -111,10 +111,10 @@ function getColumnSize(
     stats.name = Math.max(stats.name, name.length)
 
     const from = plan.from[name]
-    const current = from ? formatVerange(from) : dep.rangeClean
+    const current = from ? tryFormatVerange(from) : dep.rangeClean
     stats.current = Math.max(stats.current, current.length)
 
-    const latest = formatVerange(verange).length
+    const latest = tryFormatVerange(verange).length
     stats.latest = Math.max(stats.latest, latest)
   }
 
@@ -140,13 +140,13 @@ function displayList(
 
   print.di(
     '\n    ',
-    ...Name,
+    ...DeclName,
     ' '.repeat(size.name + size.current + 2),
     ...(showNewer
-      ? [' '.repeat(size.newer - 5), ...Newer, '  ']
+      ? [' '.repeat(size.newer - 5), ...DeclNewer, '  ']
       : [' '.repeat(size.newer + 2)]),
     ' '.repeat(size.latest - 6),
-    ...Latest,
+    ...DeclLatest,
   )
 
   for (const name of names) {
@@ -154,7 +154,7 @@ function displayList(
     if (!dep) continue
 
     const from = plan.from[dep.name]
-    const current = from ? formatVerange(from) : dep.rangeClean
+    const current = from ? tryFormatVerange(from) : dep.rangeClean
 
     const pieces: DeclourPiece[] = [
       ' ',
@@ -172,10 +172,10 @@ function displayList(
     let newerText: string | null = null
 
     const latest = plan.toLatest[dep.name]
-    let latestText = formatVerange(latest)
+    let latestText = tryFormatVerange(latest)
 
     if (newer && showNewer) {
-      newerText = formatVerange(newer)
+      newerText = tryFormatVerange(newer)
 
       if (useDitto === 'newer' && newerText === latestText) {
         pieces.push(
@@ -211,7 +211,7 @@ function displayList(
         const latestDeclour = colorizeVerangeDiff(latest, from)!
         pieces.push(...latestDeclour)
       } else {
-        pieces.push(formatVerange(latest))
+        pieces.push(tryFormatVerange(latest))
       }
     }
 
