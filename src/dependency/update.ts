@@ -1,7 +1,7 @@
 import { cyan, green } from '@src/declour'
 import print from '@src/print'
 import type { Dependency, SanCheckOptions, UpdatePlan } from '@src/types'
-import { pcsLatest, pcsNewer } from '@src/utils'
+import { piecesLatest, piecesNewer } from '@src/utils'
 import fsp from 'node:fs/promises'
 import path from 'node:path'
 import { cwd } from 'node:process'
@@ -61,7 +61,7 @@ export async function updateDependencies(
     '\nRun ',
     cyan('npm install'),
     ' to install the ',
-    ...(options.checkLatest ? pcsLatest : pcsNewer),
+    ...(options.checkLatest ? piecesLatest : piecesNewer),
     ' versions.',
   )
 }

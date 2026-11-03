@@ -6,13 +6,13 @@ Yet another `package.json` update checker.
 
 ## Introduction
 
-The CLI tool starts as a *practice* to mimic the core (i.e., a small subset of) functionalities of `npm-check-updates` with reasonably fewer dependencies. In short:
+The CLI tool starts as a *practice* to mimic the core (i.e., a small subset of) features of `npm-check-updates` with reasonably fewer dependencies. In short:
 
+- It only has CLI interface.
 - It should only work with Node.js and npm.
 - It should only work with Node.js v22 or above as vanilla `fetch` is used.
-- It doesn't support workspaces.
 - It can only check local dependencies (i.e., where a `package.json` is presented).
-- It only has CLI interface.
+- It doesn't support workspaces.
 
 The good side is:
 
