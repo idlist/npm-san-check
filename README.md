@@ -1,6 +1,6 @@
 # npm-san-check
 
-![NPM Version](https://img.shields.io/npm/v/npm-san-check)
+[![npm version](https://img.shields.io/npm/v/npm-san-check)](https://www.npmjs.com/package/npm-san-check)
 
 Yet another `package.json` update checker.
 
