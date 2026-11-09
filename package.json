@@ -1,7 +1,7 @@
 {
   "name": "npm-san-check",
-  "version": "1.0.3",
-  "description": "Simple npm update checker with fewer dependency and fewer features.",
+  "version": "1.1.0",
+  "description": "Yet another npm dependency update checker with 0 installation dependencies, a curated feature set and a reasonably small script size.",
   "keywords": [
     "npm",
     "check",

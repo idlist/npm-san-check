@@ -1,5 +1,7 @@
 # npm-san-check
 
+![NPM Version](https://img.shields.io/npm/v/npm-san-check)
+
 Yet another `package.json` update checker.
 
 *Why another?* I really liked [`npm-check-updates`](https://github.com/raineorshine/npm-check-updates), but its shorter command `ncu` conflicts with NVIDIA's [Nsight Compute CLI](https://developer.nvidia.com/nsight-compute), and it (used to) have 334 dependencies in total.
