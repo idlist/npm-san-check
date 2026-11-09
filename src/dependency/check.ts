@@ -54,7 +54,7 @@ export async function checkDependencies(
   options: SanCheckOptions,
 ): Promise<Record<string, CheckResult>> {
   const queue = new PQueue({
-    concurrency: 5,
+    concurrency: options.concurrency,
     interval: 100,
     intervalCap: 1,
   })

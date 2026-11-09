@@ -17,7 +17,7 @@ The CLI tool starts as a *practice* to mimic the core (i.e., a small subset of) 
 The good side is:
 
 - It has 0 installation dependencies.
-- There are 5 actual dependencies with sensible choice, and the bundled script is around 100KB.
+- There are 5 actual dependencies with sensible choice. The bundled script is around 100KB.
 
 I've been using the tool myself for more than 2 years, and it kind of works. Now I've decided to give it some love by refactoring it... well, hope it doesn't break.
 
@@ -67,7 +67,8 @@ This is the strategy similar (but not equal) to the one `npm-check-updates` uses
 npm-sc [...filters]
        [-u | --update] [-l | --latest] [--pre | --prerelease]
        [--no-deps] [--no-dev-deps] [--opt]
-       [-f | --file] [-p | --provider] [-r | --registry]
+       [-f | --file] [-c | --concurrency]
+       [-p | --provider] [-r | --registry]
 ```
 
 `filters`: Packages to be updated.
@@ -92,6 +93,8 @@ npm-sc [...filters]
 `--opt`: Check `optionalDependencies`.
 
 `-f`, `--file`: The location of the package file, relative to current working directory. Default to `package.json`.
+
+`-c`, `--concurrency`: How many network request at max is allowed when checking updates. Default to 5.
 
 `-p`, `--provider`: From where the tool get the versions of the packages. Can be set to `npm` (from npm) or `jsd` (from jsDelivr).
 

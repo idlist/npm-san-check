@@ -15,6 +15,7 @@ const options: SanCheckOptions = {
   checkPrerelease: false,
   checkTypes: new Set(['dependencies', 'devDependencies']),
   file: 'package.json',
+  concurrency: 5,
   provider: 'npm',
   registry: 'https://registry.npmjs.org',
 }
@@ -49,8 +50,15 @@ if (args.opt) {
 if (args.f || args.file) {
   options.file = String(args.f || args.file)
 }
+if (args.c || args.concurrency) {
+  const n = parseInt(args.c || args.concurrency)
+
+  if (!Number.isNaN(n)) {
+    options.concurrency = n
+  }
+}
 if (args.p || args.provider) {
-  const provider: string = args.p || args.provider
+  const provider = String(args.p || args.provider)
 
   if (isVersionProvider(provider)) {
     options.provider = provider

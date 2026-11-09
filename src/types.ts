@@ -23,6 +23,7 @@ export interface SanCheckOptions {
   checkPrerelease: boolean
   checkTypes: Set<DependencyType>
   file: string
+  concurrency: number
   provider: 'npm' | 'jsd'
   registry: string
 }

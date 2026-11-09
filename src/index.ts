@@ -1,4 +1,4 @@
-import { declour, green } from '@src/declour/index'
+import { green } from '@src/declour/index'
 import fsp from 'node:fs/promises'
 import path from 'node:path'
 import { cwd, exit } from 'node:process'
@@ -55,7 +55,7 @@ async function tryGetPackageFile(file: string) {
     const packageData = await fsp.readFile(fullPath, { encoding: 'utf-8' })
     return packageData
   } catch {
-    print.e(declour('there isn\'t a ', green(file), ' file under this directory'))
+    print.de('there isn\'t a ', green(file), ' file under this directory')
     return
   }
 }
@@ -65,7 +65,7 @@ async function tryLoadPackageJson(file: string, packageData: string) {
     const packageJson = JSON.parse(packageData) as PackageJson
     return packageJson
   } catch {
-    print.e(declour('failed to parse ', green(file), '.'))
+    print.de('failed to parse ', green(file), '.')
     return
   }
 }
